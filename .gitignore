@@ -1,0 +1,8 @@
+# Ignore backups and compiled local output
+Index_backup.html
+dry_run_output.html
+
+# IDE/OS files
+.DS_Store
+Thumbs.db
+*.log
