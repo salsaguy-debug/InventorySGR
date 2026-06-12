@@ -114,40 +114,83 @@
     }
 
     .brand-logo {
-      height: 65px;
-      width: auto;
-      object-fit: contain;
-      max-width: 280px;
+      width: 44px;
+      height: 44px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background-color: var(--bg-input);
       transition: var(--transition-base);
     }
     
     @media (max-width: 480px) {
       .brand-logo {
-        height: 50px;
+        width: 38px;
+        height: 38px;
       }
     }
 
     .brand-section {
       display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .brand-title-group {
+      display: flex;
       flex-direction: column;
+      justify-content: center;
     }
 
     .brand-title {
-      font-size: 1.8rem;
-      color: var(--accent-gold);
+      font-size: 1.25rem;
+      color: var(--text-main);
+      font-weight: 800;
+      letter-spacing: -0.25px;
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      letter-spacing: -0.5px;
+      line-height: 1.2;
     }
 
     .brand-subtitle {
-      font-size: 0.9rem;
+      font-size: 0.8rem;
       color: var(--text-muted);
-      margin-top: 0.25rem;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
+      margin-top: 0.1rem;
+      text-transform: none;
+      letter-spacing: 0.5px;
       font-weight: 600;
+    }
+
+    .menu-btn {
+      background: none;
+      border: 1px solid var(--border-color);
+      border-radius: 50%;
+      color: var(--text-main);
+      cursor: pointer;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--bg-input);
+      transition: var(--transition-base);
+    }
+    .menu-btn:hover {
+      background-color: var(--border-color);
+      transform: scale(1.05);
+    }
+
+    .role-badge {
+      background-color: rgba(59, 130, 246, 0.15);
+      color: var(--info-blue);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+      text-transform: uppercase;
+      font-family: 'Outfit', sans-serif;
     }
 
     .header-actions {
@@ -988,7 +1031,7 @@
         justify-content: space-between;
       }
       .brand-title {
-        font-size: 1.5rem;
+        font-size: 1.15rem;
       }
       .item-grid {
         grid-template-columns: 1fr;
@@ -1028,7 +1071,19 @@
     <!-- Header -->
     <header>
       <div class="brand-section">
-        <img id="brandLogoImg" src="" alt="Tradici&#xf3;n Logo" class="brand-logo">
+        <button class="menu-btn" aria-label="Toggle Menu">
+          <svg style="width: 18px; height: 18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+        <img id="brandLogoImg" src="" alt="El Patrón Logo" class="brand-logo">
+        <div class="brand-title-group">
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span class="brand-title">El Patrón</span>
+            <span class="role-badge">DIR</span>
+          </div>
+          <span class="brand-subtitle">Tradición AI</span>
+        </div>
       </div>
       <div class="header-actions">
         <div class="view-select-container" id="performerSelectContainer" style="display: none; margin-right: 0.5rem;">
