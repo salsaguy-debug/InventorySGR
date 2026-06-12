@@ -258,7 +258,7 @@
     }
 
     .stat-badge {
-      background-color: rgba(27, 35, 54, 0.6);
+      background-color: var(--bg-input);
       border: 1px solid var(--border-color);
       border-radius: var(--radius-md);
       padding: 0.5rem 1rem;
@@ -271,6 +271,10 @@
       font-weight: 700;
       color: var(--accent-gold);
       font-family: 'Outfit', sans-serif;
+    }
+
+    [data-theme="light"] .stat-val {
+      color: #b45309; /* Rich dark gold for readability in light mode */
     }
 
     .stat-lbl {
