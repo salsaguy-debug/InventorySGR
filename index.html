@@ -1098,9 +1098,31 @@
 
   <!-- Script block receiving initial load variables from Apps Script server scriptlets -->
   <script>
-    // Server variables loaded via Apps Script template parameters.
-    // If running standalone/locally, fallback to mock data or empty templates.
-    const INITIAL_EMAIL = "<?= email ?>";
+    // Google Apps Script API URL
+    const API_URL = "https://script.google.com/macros/s/AKfycbw_fmm_Rr3zpBOeWL0bOXPh9B8OC94ql5W7XKJMC1HTyOPAULEM1YRuGKBj87QtO2jZ/exec";
+
+    // Helper to resolve email parameter from URL in the browser
+    function getEmailFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      let email = params.get('email') || '';
+      const rawId = params.get('id') || '';
+      
+      if (rawId && !email) {
+        try {
+          let standardBase64 = rawId.trim().replace(/-/g, '+').replace(/_/g, '/');
+          while (standardBase64.length % 4 !== 0) {
+            standardBase64 += '=';
+          }
+          const decodedString = atob(standardBase64);
+          email = decodedString.trim().toLowerCase();
+        } catch (err) {
+          console.error("Failed to decode base64 id in client: ", err);
+        }
+      }
+      return email.trim().toLowerCase();
+    }
+
+    const INITIAL_EMAIL = getEmailFromUrl();
     
     // Safe storage wrapper to prevent crashes in sandboxed / iframe environments
     const safeStorage = {
@@ -1123,33 +1145,78 @@
       }
     };
 
-    // Parse items JSON safely from the template script tag to prevent IDE syntax errors
+    // Central API Router supporting both local dry runs (mock data) and live REST API calls
+    function callAPI(action, payload, successCallback, failureCallback) {
+      // 1. If running as a mock / standalone local fallback preview
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.port === "8000") {
+        if (action === "getInitialData") {
+          setTimeout(() => {
+            successCallback({
+              email: payload.email,
+              items: [],
+              performerName: "Mock User",
+              isAdminUser: true,
+              performersList: [
+                { email: "demo@gmail.com", name: "Demo Performer" },
+                { email: "rodriguez2113@gmail.com", name: "Director" }
+              ],
+              errorMsg: ""
+            });
+          }, 800);
+        } else if (action === "getPerformerInventoryForAdmin") {
+          setTimeout(() => {
+            successCallback([]);
+          }, 800);
+        } else {
+          setTimeout(() => {
+            successCallback({ success: true });
+          }, 1000);
+        }
+        return;
+      }
+
+      // 2. Live API mode using standard fetch()
+      if (action === "getInitialData") {
+        fetch(`${API_URL}?action=getInitialData&email=${encodeURIComponent(payload.email)}`)
+          .then(res => res.json())
+          .then(successCallback)
+          .catch(failureCallback);
+      } else if (action === "getPerformerInventoryForAdmin") {
+        fetch(`${API_URL}?action=getPerformerInventoryForAdmin&email=${encodeURIComponent(payload.email)}&selectedEmail=${encodeURIComponent(payload.selectedEmail)}`)
+          .then(res => res.json())
+          .then(successCallback)
+          .catch(failureCallback);
+      } else {
+        // POST actions (updateStatus, sendEmails)
+        fetch(API_URL, {
+          method: 'POST',
+          mode: 'cors',
+          headers: {
+            'Content-Type': 'text/plain'
+          },
+          body: JSON.stringify({
+            action: action,
+            ...payload
+          })
+        })
+        .then(res => res.json())
+        .then(res => {
+          if (res.success === false) {
+            failureCallback(res.error || "API returned error status");
+          } else {
+            successCallback(res);
+          }
+        })
+        .catch(failureCallback);
+      }
+    }
+
     let INITIAL_ITEMS = [];
-    try {
-      const itemsDataText = document.getElementById('initial-items-data').textContent.trim();
-      if (itemsDataText && !itemsDataText.startsWith('<' + '?')) {
-        INITIAL_ITEMS = JSON.parse(itemsDataText);
-      }
-    } catch (err) {
-      console.error("Failed to parse initial items data: ", err);
-    }
-    INITIAL_ITEMS = Array.isArray(INITIAL_ITEMS) ? INITIAL_ITEMS : [];
-    
-    const IS_ADMIN = "<?= !!isAdminUser ?>" === "true";
+    const IS_ADMIN = false;
     let INITIAL_PERFORMERS = [];
-    try {
-      const performersText = document.getElementById('initial-performers-data').textContent.trim();
-      if (performersText && !performersText.startsWith('<' + '?')) {
-        INITIAL_PERFORMERS = JSON.parse(performersText);
-      }
-    } catch (err) {
-      console.error("Failed to parse initial performers data: ", err);
-    }
-    INITIAL_PERFORMERS = Array.isArray(INITIAL_PERFORMERS) ? INITIAL_PERFORMERS : [];
-    
-    const PERFORMER_NAME = "<?= performerName ?>";
-    const ERROR_MSG = "<?= errorMsg ?>";
-    const WEB_APP_URL = "<?= webAppUrl ?>";
+    const PERFORMER_NAME = "";
+    const ERROR_MSG = "";
+    const WEB_APP_URL = API_URL;
 
     // App state
     let state = {
@@ -2278,32 +2345,17 @@
       initView();
       setupEventListeners();
       
-      if (typeof google !== 'undefined' && google.script && google.script.run) {
-        // Apps Script environment: load initial dataset dynamically
-        google.script.run
-          .withSuccessHandler(onInitialDataLoaded)
-          .withFailureHandler(onInitialDataFailed)
-          .getInitialLoadData(INITIAL_EMAIL);
+      if (INITIAL_EMAIL) {
+        callAPI(
+          "getInitialData",
+          { email: INITIAL_EMAIL },
+          onInitialDataLoaded,
+          onInitialDataFailed
+        );
       } else {
-        // Standalone local preview environment: fall back to compile-time variables
         const loadingElement = document.getElementById('loadingView');
         if (loadingElement) loadingElement.style.display = 'none';
-        
-        state.items = INITIAL_ITEMS;
-        state.performers = INITIAL_PERFORMERS;
-        state.isAdmin = IS_ADMIN;
-        state.name = PERFORMER_NAME;
-        state.email = INITIAL_EMAIL;
-        
-        if (ERROR_MSG) {
-          showErrorBanner(ERROR_MSG);
-        }
-        
-        if (state.email) {
-          renderDashboard();
-        } else {
-          renderLogin();
-        }
+        renderLogin();
       }
     });
 
@@ -2411,39 +2463,25 @@
         </div>
       `;
       
-      if (typeof google !== 'undefined' && google.script && google.script.run) {
-        google.script.run
-          .withSuccessHandler((retrievedItems) => {
-            state.items = retrievedItems || [];
-            updateStats();
-            renderInventoryCards();
-            showToast("Successfully loaded performer profile!", "success");
-          })
-          .withFailureHandler((error) => {
-            showToast("Failed to load inventory: " + error.toString(), "error");
-            elements.itemsContainer.innerHTML = `
-              <div class="empty-state" style="grid-column: 1 / -1;">
-                <h3>Error Loading Profile</h3>
-                <p>${error.toString()}</p>
-              </div>
-            `;
-          })
-          .getPerformerInventoryForAdmin(state.email, selectedEmail);
-      } else {
-        // Mock fallback for standalone HTML preview testing
-        setTimeout(() => {
-          let mockFiltered = [];
-          if (selectedEmail === 'all') {
-            mockFiltered = INITIAL_ITEMS;
-          } else {
-            mockFiltered = INITIAL_ITEMS.filter(item => item.assigned === selectedEmail);
-          }
-          state.items = mockFiltered;
+      callAPI(
+        "getPerformerInventoryForAdmin",
+        { email: state.email, selectedEmail: selectedEmail },
+        (retrievedItems) => {
+          state.items = retrievedItems || [];
           updateStats();
           renderInventoryCards();
-          showToast(`Mock Loaded: Profile for ${selectedEmail}`, "success");
-        }, 800);
-      }
+          showToast("Successfully loaded performer profile!", "success");
+        },
+        (error) => {
+          showToast("Failed to load inventory: " + error.toString(), "error");
+          elements.itemsContainer.innerHTML = `
+            <div class="empty-state" style="grid-column: 1 / -1;">
+              <h3>Error Loading Profile</h3>
+              <p>${error.toString()}</p>
+            </div>
+          `;
+        }
+      );
     }
 
     // Handle portal logout
@@ -2514,36 +2552,24 @@
       setLoadingState(true);
       showFeedback("Checking our database ledger...", "info");
 
-      // Verify and send email link using google.script.run
-      if (typeof google !== 'undefined' && google.script && google.script.run) {
-        google.script.run
-          .withSuccessHandler((response) => {
-            setLoadingState(false);
-            if (response.success) {
-              showFeedback(response.message, "success");
-              showToast("Access link sent! Please check your email inbox.", "success");
-              elements.performerEmail.value = "";
-            } else {
-              showFeedback(response.error, "error");
-            }
-          })
-          .withFailureHandler((error) => {
-            setLoadingState(false);
-            showFeedback("Server connection failed: " + error.toString(), "error");
-          })
-          .requestAccessLink(email);
-      } else {
-        // Standalone mock fallback for development template previews
-        setTimeout(() => {
+      callAPI(
+        "requestAccessLink",
+        { email: email },
+        (response) => {
           setLoadingState(false);
-          if (email.toLowerCase() === "demo@gmail.com" || email.includes("@")) {
-            showFeedback("\ud83d\udd11 Mock Server Response: Access link would be emailed to: " + email, "success");
-            showToast("Mock link emailed successfully!", "success");
+          if (response.success) {
+            showFeedback(response.message, "success");
+            showToast("Access link sent! Please check your email inbox.", "success");
+            elements.performerEmail.value = "";
           } else {
-            showFeedback("Email not registered in the system.", "error");
+            showFeedback(response.error, "error");
           }
-        }, 1500);
-      }
+        },
+        (error) => {
+          setLoadingState(false);
+          showFeedback("Server connection failed: " + error.toString(), "error");
+        }
+      );
     }
 
     function setLoadingState(isLoading) {
@@ -2807,66 +2833,48 @@
       statusIndicator.querySelector('span:last-child').textContent = "Saving...";
       statusIndicator.querySelector('.spinner').style.display = "inline-block";
 
-      // Call Google Apps Script server function
-      if (typeof google !== 'undefined' && google.script && google.script.run) {
-        google.script.run
-          .withSuccessHandler((response) => {
-            if (response.success) {
-              // Show green checkmark/Saved success
-              statusIndicator.className = "sync-status active";
-              statusIndicator.querySelector('span:last-child').innerHTML = "\u2713 Saved!";
-              statusIndicator.querySelector('.spinner').style.display = "none";
-              
-              // Update state locally
-              const index = state.items.findIndex(item => item.rowIndex === rowIndex);
-              if (index !== -1) {
-                state.items[index].status = newStatus;
-                state.items[index].notes = notesText;
-                // If collision guard corrected row index, update local state row index
-                if (response.resolvedRowIndex && response.resolvedRowIndex !== rowIndex) {
-                  state.items[index].rowIndex = response.resolvedRowIndex;
-                }
+      callAPI(
+        "updateStatus",
+        {
+          rowIndex: rowIndex,
+          expectedId: itemId,
+          newStatus: newStatus,
+          performerNotes: notesText
+        },
+        (response) => {
+          if (response.success) {
+            // Show green checkmark/Saved success
+            statusIndicator.className = "sync-status active";
+            statusIndicator.querySelector('span:last-child').innerHTML = "\u2713 Saved!";
+            statusIndicator.querySelector('.spinner').style.display = "none";
+            
+            // Update state locally
+            const index = state.items.findIndex(item => item.rowIndex === rowIndex);
+            if (index !== -1) {
+              state.items[index].status = newStatus;
+              state.items[index].notes = notesText;
+              // If collision guard corrected row index, update local state row index
+              if (response.resolvedRowIndex && response.resolvedRowIndex !== rowIndex) {
+                state.items[index].rowIndex = response.resolvedRowIndex;
               }
-              
-              updateStats();
-              
-              // Fade out saved indicator after 2 seconds
-              setTimeout(() => {
-                // Check if element is still in the same state
-                if (statusIndicator.classList.contains('active') && !statusIndicator.classList.contains('saving')) {
-                  statusIndicator.classList.remove('active');
-                }
-              }, 2000);
-            } else {
-              showErrorSaving(rowIndex, response.error);
             }
-          })
-          .withFailureHandler((error) => {
-            showErrorSaving(rowIndex, error.toString());
-          })
-          .updateItemStatusAndNotes(rowIndex, itemId, newStatus, notesText);
-      } else {
-        // Mock standalone preview behavior
-        setTimeout(() => {
-          statusIndicator.className = "sync-status active";
-          statusIndicator.querySelector('span:last-child').innerHTML = "\u2713 Saved (Mock)!";
-          statusIndicator.querySelector('.spinner').style.display = "none";
-          
-          const index = state.items.findIndex(item => item.rowIndex === rowIndex);
-          if (index !== -1) {
-            state.items[index].status = newStatus;
-            state.items[index].notes = notesText;
+            
+            updateStats();
+            
+            // Fade out saved indicator after 2 seconds
+            setTimeout(() => {
+              if (statusIndicator.classList.contains('active') && !statusIndicator.classList.contains('saving')) {
+                statusIndicator.classList.remove('active');
+              }
+            }, 2000);
+          } else {
+            showErrorSaving(rowIndex, response.error);
           }
-          updateStats();
-          showToast(`Mock Saved: Status for item ${itemId} set to "${newStatus}"`, "success");
-          
-          setTimeout(() => {
-            if (statusIndicator.classList.contains('active') && !statusIndicator.classList.contains('saving')) {
-              statusIndicator.classList.remove('active');
-            }
-          }, 2000);
-        }, 1000);
-      }
+        },
+        (error) => {
+          showErrorSaving(rowIndex, error.toString());
+        }
+      );
     }
 
     function showErrorSaving(rowIndex, errorText) {

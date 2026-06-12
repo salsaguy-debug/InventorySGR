@@ -1,12 +1,13 @@
 /**
  * PROJECT: Tradici\u00f3n Performer Inventory Web App
  * FILE: Code.gs
- * VERSION: v1.2.4
+ * VERSION: v2.0.0
  * AUTHOR: Angel Alberto Rodriguez Serrano
  * ORGANIZATION: Salsa Guy Richmond, LLC / Tradici\u00f3n Dance Company
  * DATE: 2026-06-11
  * 
  * CHANGE LOG (BTG):
+ * - VERSION 2.0.0: Converted to REST API backend for GitHub Pages hosted frontend. Added doPost and doGet API handlers.
  * - VERSION 1.2.4: Implemented getInitialLoadData for asynchronous loading to bypass compile-time scriptlet limits.
  * - VERSION 1.2.3: Synchronized versioning for line-length safety limit fix.
  * - VERSION 1.2.2: Synchronized versioning for base64 line length parsing fixes.
@@ -37,15 +38,14 @@ function isAdmin(email) {
 }
 
 /**
- * Serves the Web App frontend.
- * Supports URL parameters:
- *  - email: Plain text email address (e.g. ?email=dancedancer@gmail.com)
- *  - id: Base64-encoded email address (e.g. ?id=ZGFuY2VkYW5jZXJAZ21haWwuY29t)
+ * Serves the Web App API or redirects web users to GitHub Pages.
  */
 function doGet(e) {
   let email = "";
+  let action = "";
   
   if (e && e.parameter) {
+    action = e.parameter.action ? e.parameter.action.trim() : "";
     if (e.parameter.email) {
       email = e.parameter.email.trim().toLowerCase();
     } else if (e.parameter.id) {
@@ -65,28 +65,74 @@ function doGet(e) {
     }
   }
 
-  const template = HtmlService.createTemplateFromFile('Index');
-  template.email = email;
-  
-  // Try getting service URL dynamically. Fallback to placeholder if webapp is not deployed yet.
-  let webAppUrl = "";
-  try {
-    webAppUrl = ScriptApp.getService().getUrl();
-  } catch (err) {
-    Logger.log("Could not detect Web App URL dynamically: " + err.toString());
+  // If this is a REST API call to retrieve the data payload
+  if (action === "getInitialData") {
+    const data = getInitialLoadData(email);
+    return ContentService.createTextOutput(JSON.stringify(data))
+      .setMimeType(ContentService.MimeType.JSON);
   }
-  template.webAppUrl = webAppUrl;
 
-  template.items = [];
-  template.performerName = "";
-  template.errorMsg = "";
-  template.isAdminUser = false;
-  template.performersList = [];
+  // If this is an admin switcher API request to load another performer's profile
+  if (action === "getPerformerInventoryForAdmin") {
+    let selectedEmail = e.parameter.selectedEmail ? e.parameter.selectedEmail.trim().toLowerCase() : "";
+    const data = getPerformerInventoryForAdmin(email, selectedEmail);
+    return ContentService.createTextOutput(JSON.stringify(data))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
 
-  return template.evaluate()
-    .setTitle("Tradici\u00f3n Inventory - Performer Portal")
-    .addMetaTag('viewport', 'width=device-width, initial-scale=1')
-    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+  // Otherwise, redirect to the GitHub Pages hosted frontend
+  const gitHubPagesUrl = "https://salsaguy-debug.github.io/InventorySGR/";
+  let queryParams = "";
+  if (e && e.queryString) {
+    queryParams = "?" + e.queryString;
+  }
+  const redirectUrl = gitHubPagesUrl + queryParams;
+
+  return HtmlService.createHtmlOutput(
+    "<!DOCTYPE html><html><head><title>Redirecting...</title></head><body>" +
+    "<div style='font-family: sans-serif; text-align: center; padding: 50px;'>" +
+    "<h2>Redirecting to Tradici&oacute;n Inventory Portal...</h2>" +
+    "<p>If you are not redirected automatically, <a href='" + redirectUrl + "'>click here</a>.</p>" +
+    "</div>" +
+    "<script>window.location.href = '" + redirectUrl + "';</script>" +
+    "</body></html>"
+  ).setTitle("Redirecting...");
+}
+
+/**
+ * Handles incoming JSON POST API requests from the GitHub Pages frontend.
+ * Bypasses preflight options check by expecting a simple text/plain body.
+ */
+function doPost(e) {
+  try {
+    const postData = JSON.parse(e.postData.contents);
+    if (postData.action === "updateStatus") {
+      const result = updateItemStatusAndNotes(
+        postData.rowIndex,
+        postData.expectedId,
+        postData.newStatus,
+        postData.performerNotes
+      );
+      return ContentService.createTextOutput(JSON.stringify(result))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    if (postData.action === "sendEmails") {
+      const summary = sendPerformerInventoryEmails();
+      return ContentService.createTextOutput(JSON.stringify({ success: true, summary: summary }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    if (postData.action === "requestAccessLink") {
+      const result = requestAccessLink(postData.email);
+      return ContentService.createTextOutput(JSON.stringify(result))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    return ContentService.createTextOutput(JSON.stringify({ success: false, error: "Invalid action" }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    Logger.log("Error in doPost: " + err.toString());
+    return ContentService.createTextOutput(JSON.stringify({ success: false, error: err.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
 }
 
 /**

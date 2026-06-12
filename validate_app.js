@@ -5,7 +5,7 @@ function validateApp() {
   console.log("Starting code validation checks...");
   
   const codeGsPath = path.join(__dirname, 'Code.gs');
-  const indexHtmlPath = path.join(__dirname, 'Index.html');
+  const indexHtmlPath = path.join(__dirname, 'index.html');
   
   // 1. Verify files exist
   if (!fs.existsSync(codeGsPath)) {
@@ -15,16 +15,16 @@ function validateApp() {
   console.log("✅ Code.gs file exists.");
   
   if (!fs.existsSync(indexHtmlPath)) {
-    console.error("❌ Error: Index.html does not exist.");
+    console.error("❌ Error: index.html does not exist.");
     process.exit(1);
   }
-  console.log("✅ Index.html file exists.");
+  console.log("✅ index.html file exists.");
   
   // 2. Read contents
   const codeGs = fs.readFileSync(codeGsPath, 'utf8');
   const indexHtml = fs.readFileSync(indexHtmlPath, 'utf8');
   
-  // 3. Verify dropdown options in Index.html
+  // 3. Verify dropdown options in index.html
   const requiredOptions = [
     "-",
     "Yes. I got it",
@@ -36,7 +36,7 @@ function validateApp() {
     "I cannot read the label ID."
   ];
   
-  console.log("Checking required dropdown options in Index.html select tag...");
+  console.log("Checking required dropdown options in index.html select tag...");
   let allOptionsFound = true;
   for (const option of requiredOptions) {
     // Escape special regex characters
@@ -55,7 +55,7 @@ function validateApp() {
     console.error("❌ Validation failed: One or more required dropdown options are missing.");
     process.exit(1);
   }
-  console.log("✅ All required dropdown options are correctly defined in Index.html.");
+  console.log("✅ All required dropdown options are correctly defined in index.html.");
   
   // 4. Verify spreadsheet connection
   const sheetIdMatch = codeGs.includes("1IPZznR7kK-oCoThEHmACgMOW6KJfP8NSwzGKv3q-ITY");
@@ -68,9 +68,9 @@ function validateApp() {
 
   // 5. Verify basic HTML structures
   if (indexHtml.includes('<style>') && indexHtml.includes('</style>') && indexHtml.includes('<script>') && indexHtml.includes('</script>')) {
-    console.log("✅ Index.html includes CSS and JS blocks.");
+    console.log("✅ index.html includes CSS and JS blocks.");
   } else {
-    console.error("❌ Index.html is missing styling or scripts blocks.");
+    console.error("❌ index.html is missing styling or scripts blocks.");
     process.exit(1);
   }
 

@@ -62,7 +62,7 @@ def get_performer_inventory(email, csv_rows):
 
 def compile_and_run_template(email, items, performer_name, error_msg, web_app_url):
     print("Compiling Index.html template...")
-    with open('Index.html', 'r', encoding='utf-8') as f:
+    with open('index.html', 'r', encoding='utf-8') as f:
         html = f.read()
 
     # We will simulate Google Apps Script evaluate() by replacing scriptlets.
