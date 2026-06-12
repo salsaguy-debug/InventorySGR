@@ -33,14 +33,17 @@ function validateApp() {
     "I lost it and need to replace it",
     "I loaned it to another performer (See Notes)",
     "I damaged it and need to replace it",
-    "I cannot read the label ID."
+    "I cannot read the label ID.",
+    "Yes I have one with a diferent number. See \"PERFORMER NOTES\" NOTES",
+    "Yes, I have the item with a different number. (See Performer Notes)"
   ];
   
   console.log("Checking required dropdown options in index.html select tag...");
   let allOptionsFound = true;
   for (const option of requiredOptions) {
-    // Escape special regex characters
-    const escaped = option.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+    // Escape special regex characters and normalize quotes for HTML
+    let escaped = option.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+    escaped = escaped.replace(/"/g, '(?:&quot;|")');
     const regex = new RegExp(`option\\s+value="${escaped}"`, 'i');
     
     if (regex.test(indexHtml)) {

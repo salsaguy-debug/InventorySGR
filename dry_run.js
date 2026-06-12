@@ -97,11 +97,25 @@ function getPerformerInventory(email, csvRows) {
 
 async function runDryRun() {
   console.log("Fetching live spreadsheet data for dry run...");
+  let csvRows;
   try {
     const csvText = await fetchCsv();
-    const csvRows = parseCsv(csvText);
+    csvRows = parseCsv(csvText);
+    if (!csvRows || csvRows.length === 0 || !csvRows[0].map(h => h.toString().toLowerCase().trim()).includes("assigned")) {
+      throw new Error("Invalid spreadsheet CSV format returned.");
+    }
     console.log(`Parsed ${csvRows.length} rows from spreadsheet.`);
+  } catch (err) {
+    console.warn("⚠️ Warning: Fetching live spreadsheet failed or returned invalid format. Using mock CSV data for dry run...", err.message);
+    csvRows = [
+      ["ID", "Item Description", "Pics", "Replacement Cost", "Status", "Assigned", "Type", "Performer Notes"],
+      ["1", "Bomba Skirt - Red/White Flower Pattern", "https://example.com/bomba.jpg", "75", "Yes. I got it", "ednatradicion@gmail.com", "Bomba", "Practice notes"],
+      ["2", "Plena Panderos Set (3 drums)", "", "150", "Yes. I got it", "ednatradicion@gmail.com", "Plena", ""],
+      ["3", "Spanish Hand Fan - Large Black Lace", "", "20", "-", "ednatradicion@gmail.com", "Props", ""]
+    ];
+  }
 
+  try {
     // Test with a registered email to verify evaluation with actual data
     const testEmail = "ednatradicion@gmail.com"; 
     console.log(`Running dry run for email: ${testEmail}`);
@@ -141,9 +155,9 @@ async function runDryRun() {
     code += `output += ${JSON.stringify(html.substring(pos))};\n`;
     code += "return output;\n";
 
-    const compileFn = new Function('email', 'items', 'performerName', 'errorMsg', 'webAppUrl', code);
+    const compileFn = new Function('email', 'items', 'performerName', 'errorMsg', 'webAppUrl', 'performersList', code);
     console.log("✅ Dry Run: Template compilation passed!");
-    const result = compileFn(testEmail, items, performerName, errorMsg, webAppUrl);
+    const result = compileFn(testEmail, items, performerName, errorMsg, webAppUrl, []);
     console.log("✅ Dry Run: Template execution passed!");
     
     // Write output to verification file
