@@ -899,16 +899,12 @@
       height: 48px;
     }
     
-    /* Inline Meta Badges (Shown only in list layout) */
+    /* Inline Meta Badges (Shown in all layouts) */
     .item-meta-badges {
-      display: none;
+      display: flex;
       gap: 0.5rem;
       margin-top: 0.5rem;
       flex-wrap: wrap;
-    }
-    
-    .item-grid.layout-list .item-meta-badges {
-      display: flex;
     }
     
     .meta-badge {
@@ -924,6 +920,15 @@
     .meta-badge.badge-gold {
       color: var(--accent-gold);
       border-color: rgba(245, 197, 66, 0.25);
+    }
+
+    .meta-badge.badge-type {
+      color: #38bdf8;
+      border-color: rgba(56, 189, 248, 0.25);
+    }
+    [data-theme="light"] .meta-badge.badge-type {
+      color: #0284c7;
+      border-color: rgba(2, 132, 199, 0.25);
     }
     
     /* Hide top overlay badges in list view to avoid redundancy */
@@ -2886,6 +2891,7 @@
               <div class="item-meta-badges">
                 <span class="meta-badge">ID: ${item.id || 'N/A'}</span>
                 <span class="meta-badge badge-gold">Cost: ${item.cost || 'N/A'}</span>
+                <span class="meta-badge badge-type">Type: ${item.type || 'General'}</span>
                 ${state.isAdmin ? `<span class="meta-badge" style="color: var(--info-blue); border-color: rgba(59, 130, 246, 0.25);">Assigned: ${item.assigned || 'Unassigned'}</span>` : ''}
               </div>
             </div>
