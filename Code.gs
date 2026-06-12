@@ -92,9 +92,9 @@ function doGet(e) {
     "<!DOCTYPE html><html><head><title>Redirecting...</title></head><body>" +
     "<div style='font-family: sans-serif; text-align: center; padding: 50px;'>" +
     "<h2>Redirecting to Tradici&oacute;n Inventory Portal...</h2>" +
-    "<p>If you are not redirected automatically, <a href='" + redirectUrl + "'>click here</a>.</p>" +
+    "<p>If you are not redirected automatically, <a href='" + redirectUrl + "' target='_top'>click here</a>.</p>" +
     "</div>" +
-    "<script>window.location.href = '" + redirectUrl + "';</script>" +
+    "<script>window.top.location.href = '" + redirectUrl + "';</script>" +
     "</body></html>"
   ).setTitle("Redirecting...");
 }
