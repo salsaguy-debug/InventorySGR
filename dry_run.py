@@ -28,7 +28,7 @@ def get_performer_inventory(email, csv_rows):
     pic_col = headers.index("pic") if "pic" in headers else -1
     cost_col = headers.index("replacement cost") if "replacement cost" in headers else -1
     status_col = headers.index("status") if "status" in headers else -1
-    type_col = headers.index("type") if "type" in headers else -1
+    type_col = headers.index("type") if "type" in headers else (headers.index("types") if "types" in headers else -1)
     
     # Check performer notes column
     performer_notes_col = headers.index("performer notes") if "performer notes" in headers else -1

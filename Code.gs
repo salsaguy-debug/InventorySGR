@@ -291,7 +291,10 @@ function getAllInventory() {
   const picCol = lowerHeaders.indexOf("pic");
   const costCol = lowerHeaders.indexOf("replacement cost");
   const statusCol = lowerHeaders.indexOf("status");
-  const typeCol = lowerHeaders.indexOf("type");
+  let typeCol = lowerHeaders.indexOf("type");
+  if (typeCol === -1) {
+    typeCol = lowerHeaders.indexOf("types");
+  }
   
   const performerNotesCol = getOrCreatePerformerNotesColumn(sheet, lowerHeaders);
   
@@ -377,7 +380,10 @@ function getPerformerInventory(email) {
   const picCol = lowerHeaders.indexOf("pic");
   const costCol = lowerHeaders.indexOf("replacement cost");
   const statusCol = lowerHeaders.indexOf("status");
-  const typeCol = lowerHeaders.indexOf("type");
+  let typeCol = lowerHeaders.indexOf("type");
+  if (typeCol === -1) {
+    typeCol = lowerHeaders.indexOf("types");
+  }
   
   if (assignedCol === -1) {
     throw new Error("System Error: 'Assigned' performer column was not found in the spreadsheet headers.");
