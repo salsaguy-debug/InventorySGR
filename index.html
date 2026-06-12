@@ -1070,6 +1070,33 @@
         </div>
       </div>
 
+      <!-- Toolbar Filter & Sort Controls -->
+      <div class="dashboard-toolbar" style="display: flex; gap: 1rem; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; background: var(--bg-card); padding: 0.75rem 1.25rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); transition: var(--transition-base);">
+        <div class="toolbar-left" style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+          <span style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px;">Filter by Type:</span>
+          <div class="view-select-container">
+            <select id="typeFilterSelect" class="view-select" style="min-width: 180px; padding: 0.4rem 2.25rem 0.4rem 1rem; font-size: 0.85rem;" aria-label="Filter checklist by category type">
+              <option value="all">🔍 All Types</option>
+            </select>
+          </div>
+        </div>
+        <div class="toolbar-right" style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+          <span style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px;">Sort:</span>
+          <div class="view-select-container">
+            <select id="sortSelect" class="view-select" style="min-width: 180px; padding: 0.4rem 2.25rem 0.4rem 1rem; font-size: 0.85rem;" aria-label="Sort items checklist">
+              <option value="id-asc">🔢 ID (Lowest First)</option>
+              <option value="id-desc">🔢 ID (Highest First)</option>
+              <option value="description-asc">🔤 Description (A-Z)</option>
+              <option value="description-desc">🔤 Description (Z-A)</option>
+              <option value="type-asc">🏷️ Type (A-Z)</option>
+              <option value="type-desc">🏷️ Type (Z-A)</option>
+              <option value="cost-desc">💰 Cost (Highest First)</option>
+              <option value="cost-asc">💰 Cost (Lowest First)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
       <!-- Inventory Grid -->
       <div id="itemsContainer" class="item-grid">
         <!-- Dynamic content will populate here -->
@@ -1157,7 +1184,15 @@
           setTimeout(() => {
             successCallback({
               email: payload.email,
-              items: [],
+              items: [
+                { rowIndex: 2, id: "1", description: "Bomba Skirt - Red/White Flower Pattern", cost: "75", status: "Yes. I got it", assigned: "ednatradicion@gmail.com", type: "Bomba" },
+                { rowIndex: 3, id: "2", description: "Plena Panderos Set (3 drums)", cost: "150", status: "Yes. I got it", assigned: "ednatradicion@gmail.com", type: "Plena" },
+                { rowIndex: 4, id: "3", description: "Spanish Hand Fan - Large Black Lace", cost: "20", status: "-", assigned: "ednatradicion@gmail.com", type: "Props" },
+                { rowIndex: 5, id: "4", description: "Adjustable Microphone Boom Arm Stand", cost: "200", status: "Yes. I got it", assigned: "see location column", type: "Equipment" },
+                { rowIndex: 6, id: "5", description: "Tradición Dance Practice T-Shirt", cost: "15", status: "-", assigned: "ednatradicion@gmail.com", type: "Practice" },
+                { rowIndex: 7, id: "6", description: "Bomba Drum (Barril de Bomba) - Cedarwood", cost: "350", status: "-", assigned: "ednatradicion@gmail.com", type: "Instruments" },
+                { rowIndex: 8, id: "7", description: "White Cotton Dance Shoes (Size 7)", cost: "60", status: "I returned it", assigned: "ednatradicion@gmail.com", type: "General" }
+              ],
               performerName: "Mock User",
               isAdminUser: true,
               performersList: [
@@ -1169,7 +1204,26 @@
           }, 800);
         } else if (action === "getPerformerInventoryForAdmin") {
           setTimeout(() => {
-            successCallback([]);
+            if (payload.selectedEmail === "all") {
+              successCallback([
+                { rowIndex: 2, id: "1", description: "Bomba Skirt - Red/White Flower Pattern", cost: "75", status: "Yes. I got it", assigned: "ednatradicion@gmail.com", type: "Bomba" },
+                { rowIndex: 3, id: "2", description: "Plena Panderos Set (3 drums)", cost: "150", status: "Yes. I got it", assigned: "ednatradicion@gmail.com", type: "Plena" },
+                { rowIndex: 4, id: "3", description: "Spanish Hand Fan - Large Black Lace", cost: "20", status: "-", assigned: "ednatradicion@gmail.com", type: "Props" },
+                { rowIndex: 5, id: "4", description: "Adjustable Microphone Boom Arm Stand", cost: "200", status: "Yes. I got it", assigned: "see location column", type: "Equipment" },
+                { rowIndex: 6, id: "5", description: "Tradición Dance Practice T-Shirt", cost: "15", status: "-", assigned: "ednatradicion@gmail.com", type: "Practice" },
+                { rowIndex: 7, id: "6", description: "Bomba Drum (Barril de Bomba) - Cedarwood", cost: "350", status: "-", assigned: "ednatradicion@gmail.com", type: "Instruments" },
+                { rowIndex: 8, id: "7", description: "White Cotton Dance Shoes (Size 7)", cost: "60", status: "I returned it", assigned: "ednatradicion@gmail.com", type: "General" }
+              ]);
+            } else if (payload.selectedEmail === "demo@gmail.com") {
+              successCallback([
+                { rowIndex: 9, id: "10", description: "Danza Hat - Traditional Straw", cost: "25", status: "Yes. I got it", assigned: "demo@gmail.com", type: "Danza" },
+                { rowIndex: 10, id: "11", description: "Spanish Castanets - Handcrafted Oak", cost: "40", status: "-", assigned: "demo@gmail.com", type: "Props" }
+              ]);
+            } else {
+              successCallback([
+                { rowIndex: 11, id: "12", description: "Director Megaphone - High Power", cost: "85", status: "Yes. I got it", assigned: "rodriguez2113@gmail.com", type: "Equipment" }
+              ]);
+            }
           }, 800);
         } else {
           setTimeout(() => {
@@ -1257,7 +1311,9 @@
       viewSelectContainer: document.getElementById('viewSelectContainer'),
       performerSelect: document.getElementById('performerSelect'),
       performerSelectContainer: document.getElementById('performerSelectContainer'),
-      logoutBtn: document.getElementById('logoutBtn')
+      logoutBtn: document.getElementById('logoutBtn'),
+      typeFilterSelect: document.getElementById('typeFilterSelect'),
+      sortSelect: document.getElementById('sortSelect')
     };
 
     // Initialize application
@@ -2379,6 +2435,7 @@
       state.selectedPerformer = "all";
       
       if (state.email) {
+        populateTypeFilter();
         renderDashboard();
       } else {
         renderLogin();
@@ -2472,6 +2529,7 @@
         { email: state.email, selectedEmail: selectedEmail },
         (retrievedItems) => {
           state.items = retrievedItems || [];
+          populateTypeFilter();
           updateStats();
           renderInventoryCards();
           showToast("Successfully loaded performer profile!", "success");
@@ -2516,6 +2574,18 @@
       elements.viewSelect.addEventListener('change', changeView);
       elements.performerSelect.addEventListener('change', changePerformerProfile);
       elements.logoutBtn.addEventListener('click', handleLogout);
+      
+      if (elements.typeFilterSelect) {
+        elements.typeFilterSelect.addEventListener('change', () => {
+          updateStats();
+          renderInventoryCards();
+        });
+      }
+      if (elements.sortSelect) {
+        elements.sortSelect.addEventListener('change', () => {
+          renderInventoryCards();
+        });
+      }
       
       // Request login link
       elements.requestLinkBtn.addEventListener('click', handleRequestLink);
@@ -2652,8 +2722,47 @@
       renderInventoryCards();
     }
 
-    function updateStats() {
+    // Dynamically populates the type filter dropdown based on items in state
+    function populateTypeFilter() {
+      if (!elements.typeFilterSelect) return;
+      
+      const currentSelection = elements.typeFilterSelect.value || 'all';
+      elements.typeFilterSelect.innerHTML = '<option value="all">🔍 All Types</option>';
+      
       const itemsList = Array.isArray(state.items) ? state.items : [];
+      const types = new Set();
+      
+      itemsList.forEach(item => {
+        if (item && item.type) {
+          const trimmed = item.type.trim();
+          if (trimmed) types.add(trimmed);
+        }
+      });
+      
+      const sortedTypes = Array.from(types).sort((a, b) => a.localeCompare(b));
+      sortedTypes.forEach(type => {
+        const opt = document.createElement('option');
+        opt.value = type;
+        opt.textContent = type;
+        elements.typeFilterSelect.appendChild(opt);
+      });
+      
+      if (types.has(currentSelection)) {
+        elements.typeFilterSelect.value = currentSelection;
+      } else {
+        elements.typeFilterSelect.value = 'all';
+      }
+    }
+
+    function updateStats() {
+      let itemsList = Array.isArray(state.items) ? [...state.items] : [];
+      
+      // Filter by Type
+      const selectedType = elements.typeFilterSelect ? elements.typeFilterSelect.value : 'all';
+      if (selectedType && selectedType !== 'all') {
+        itemsList = itemsList.filter(item => item && item.type === selectedType);
+      }
+
       const total = itemsList.length;
       let confirmed = 0;
       
@@ -2684,7 +2793,38 @@
       elements.itemsContainer.innerHTML = "";
       applyViewClass();
 
-      const itemsList = Array.isArray(state.items) ? state.items : [];
+      let itemsList = Array.isArray(state.items) ? [...state.items] : [];
+
+      // Filter by Type
+      const selectedType = elements.typeFilterSelect ? elements.typeFilterSelect.value : 'all';
+      if (selectedType && selectedType !== 'all') {
+        itemsList = itemsList.filter(item => item && item.type === selectedType);
+      }
+
+      // Sort Items
+      const selectedSort = elements.sortSelect ? elements.sortSelect.value : 'id-asc';
+      itemsList.sort((a, b) => {
+        if (!a || !b) return 0;
+        switch (selectedSort) {
+          case 'id-desc':
+            return (b.id || 0) - (a.id || 0);
+          case 'description-asc':
+            return (a.description || "").localeCompare(b.description || "");
+          case 'description-desc':
+            return (b.description || "").localeCompare(a.description || "");
+          case 'type-asc':
+            return (a.type || "").localeCompare(b.type || "");
+          case 'type-desc':
+            return (b.type || "").localeCompare(a.type || "");
+          case 'cost-asc':
+            return (parseFloat(a.cost) || 0) - (parseFloat(b.cost) || 0);
+          case 'cost-desc':
+            return (parseFloat(b.cost) || 0) - (parseFloat(a.cost) || 0);
+          case 'id-asc':
+          default:
+            return (a.id || 0) - (b.id || 0);
+        }
+      });
 
       if (itemsList.length === 0) {
         elements.itemsContainer.innerHTML = `
@@ -2693,7 +2833,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
             </svg>
             <h3>No Costumes or Props Found</h3>
-            <p>We couldn't find any inventory items checked out or assigned to this email address.</p>
+            <p>We couldn't find any inventory items matching the selected filters.</p>
           </div>
         `;
         return;
@@ -2743,7 +2883,6 @@
           <div class="item-content">
             <div class="item-info">
               <h3 class="item-title">${item.description}</h3>
-              ${state.isAdmin ? `<div class="item-assignee" style="font-size: 0.8rem; color: var(--info-blue); margin-top: -0.25rem; margin-bottom: 0.5rem; font-weight: 500;">\ud83d\udc64 Assigned: ${item.assigned || 'Unassigned'}</div>` : ''}
               <div class="item-meta-badges">
                 <span class="meta-badge">ID: ${item.id || 'N/A'}</span>
                 <span class="meta-badge badge-gold">Cost: ${item.cost || 'N/A'}</span>

@@ -291,6 +291,7 @@ function getAllInventory() {
   const picCol = lowerHeaders.indexOf("pic");
   const costCol = lowerHeaders.indexOf("replacement cost");
   const statusCol = lowerHeaders.indexOf("status");
+  const typeCol = lowerHeaders.indexOf("type");
   
   const performerNotesCol = getOrCreatePerformerNotesColumn(sheet, lowerHeaders);
   
@@ -314,6 +315,7 @@ function getAllInventory() {
     const replacementCost = costCol !== -1 && row.length > costCol ? row[costCol].toString().trim() : "N/A";
     const currentStatus = statusCol !== -1 && row.length > statusCol ? row[statusCol].toString().trim() : "-";
     const notes = performerNotesCol !== -1 && row.length > performerNotesCol ? row[performerNotesCol].toString().trim() : "";
+    const itemType = typeCol !== -1 && row.length > typeCol ? row[typeCol].toString().trim() : "General";
     
     items.push({
       rowIndex: i + 1,
@@ -323,7 +325,8 @@ function getAllInventory() {
       cost: replacementCost,
       status: currentStatus || "-",
       notes: notes,
-      assigned: rowEmail
+      assigned: rowEmail,
+      type: itemType
     });
   }
   
@@ -374,6 +377,7 @@ function getPerformerInventory(email) {
   const picCol = lowerHeaders.indexOf("pic");
   const costCol = lowerHeaders.indexOf("replacement cost");
   const statusCol = lowerHeaders.indexOf("status");
+  const typeCol = lowerHeaders.indexOf("type");
   
   if (assignedCol === -1) {
     throw new Error("System Error: 'Assigned' performer column was not found in the spreadsheet headers.");
@@ -405,6 +409,7 @@ function getPerformerInventory(email) {
       const replacementCost = costCol !== -1 ? row[costCol].toString().trim() : "N/A";
       const currentStatus = statusCol !== -1 ? row[statusCol].toString().trim() : "-";
       const notes = performerNotesCol !== -1 && row.length > performerNotesCol ? row[performerNotesCol].toString().trim() : "";
+      const itemType = typeCol !== -1 && row.length > typeCol ? row[typeCol].toString().trim() : "General";
       
       items.push({
         rowIndex: i + 1, // 1-based spreadsheet row number
@@ -413,7 +418,8 @@ function getPerformerInventory(email) {
         picUrl: rawPic,
         cost: replacementCost,
         status: currentStatus || "-",
-        notes: notes
+        notes: notes,
+        type: itemType
       });
     }
   }

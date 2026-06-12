@@ -28,6 +28,7 @@ def get_performer_inventory(email, csv_rows):
     pic_col = headers.index("pic") if "pic" in headers else -1
     cost_col = headers.index("replacement cost") if "replacement cost" in headers else -1
     status_col = headers.index("status") if "status" in headers else -1
+    type_col = headers.index("type") if "type" in headers else -1
     
     # Check performer notes column
     performer_notes_col = headers.index("performer notes") if "performer notes" in headers else -1
@@ -48,6 +49,7 @@ def get_performer_inventory(email, csv_rows):
             replacement_cost = row[cost_col].strip() if cost_col != -1 and len(row) > cost_col else "N/A"
             current_status = row[status_col].strip() if status_col != -1 and len(row) > status_col else "-"
             notes = row[performer_notes_col].strip() if performer_notes_col != -1 and len(row) > performer_notes_col else ""
+            item_type = row[type_col].strip() if type_col != -1 and len(row) > type_col else "General"
 
             items.append({
                 "rowIndex": i + 1,
@@ -56,7 +58,8 @@ def get_performer_inventory(email, csv_rows):
                 "picUrl": raw_pic,
                 "cost": replacement_cost,
                 "status": current_status or "-",
-                "notes": notes
+                "notes": notes,
+                "type": item_type
             })
     return items
 
