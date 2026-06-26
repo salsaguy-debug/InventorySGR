@@ -106,6 +106,22 @@ function doGet(e) {
 function doPost(e) {
   try {
     const postData = JSON.parse(e.postData.contents);
+    if (postData.action === "login") {
+      try {
+        const authResult = validateCredentials(postData.email, postData.pin);
+        const initialData = getInitialLoadData(postData.email);
+        return ContentService.createTextOutput(JSON.stringify({
+          success: true,
+          user: authResult,
+          initialData: initialData
+        })).setMimeType(ContentService.MimeType.JSON);
+      } catch (err) {
+        return ContentService.createTextOutput(JSON.stringify({
+          success: false,
+          error: err.message || err.toString()
+        })).setMimeType(ContentService.MimeType.JSON);
+      }
+    }
     if (postData.action === "updateStatus") {
       const result = updateItemStatusAndNotes(
         postData.rowIndex,
@@ -347,6 +363,13 @@ function getPerformerInventoryForAdmin(adminEmail, performerEmail) {
   
   if (!performerEmail || performerEmail === "all") {
     return getAllInventory();
+  }
+  
+  if (performerEmail === "unassigned") {
+    var all = getAllInventory();
+    return all.filter(function(item) {
+      return !item.assigned || item.assigned.indexOf('@') === -1;
+    });
   }
   
   return getPerformerInventory(performerEmail);
@@ -749,3 +772,103 @@ function getInitialLoadData(email) {
     webAppUrl: webAppUrl
   };
 }
+
+/**
+ * Double-Lock Security Firewall:
+ * Locks the door immediately unless BOTH identity and authority check out.
+ */
+function validateCredentials(email, pin) {
+  if (!email || !pin) {
+    throw new Error("Credentials missing. Email and PIN required.");
+  }
+  
+  const formattedEmail = email.trim().toLowerCase();
+  const pinStr = pin.toString().trim();
+  
+  // Get spreadsheet instance
+  const ss = getInventorySpreadsheet();
+  const profilesSheet = ss.getSheetByName("Profiles") || ss.getSheetByName("Profile") || ss.getSheetByName("Sheet1") || ss.getSheetByName("Crosswalk");
+  if (!profilesSheet) {
+    throw new Error("System Error: Credentials database ledger ('Profiles' or 'Profile') not found in spreadsheet.");
+  }
+  
+  const values = profilesSheet.getDataRange().getValues();
+  if (values.length <= 1) {
+    throw new Error("I see you are writing from " + email + ", but I don't see that email in our performer records. Reenter your email.");
+  }
+  
+  // Find column indexes strictly by dynamic header strings (column position agnostic)
+  const headers = values[0].map(h => h.toString().toLowerCase().trim());
+  const emailCol = headers.findIndex(h => h.includes("email") || h.includes("correo"));
+  const pinCol = headers.findIndex(h => h.includes("pin") || h.includes("code") || h.includes("código"));
+  
+  // Specific header exclusions to avoid collisions
+  const nameCol = headers.findIndex(h => (h.includes("name") || h.includes("nombre") || h.includes("fullname") || h.includes("full name")) && 
+                                        !h.includes("contact") && !h.includes("emergency") && !h.includes("buddy") && !h.includes("payer") && !h.includes("sponsor"));
+                                        
+  // Strict matching for Performer ID to avoid matching license strings or item IDs
+  const idCol = headers.findIndex(h => h === "id" || h === "performer_id" || h === "performer id" || h === "member id" || h === "member_id" || h === "member" || h === "dancer id" || h === "dancer_id");
+  
+  if (emailCol === -1 || pinCol === -1) {
+    throw new Error("System Error: Credentials sheet headers are incorrectly configured.");
+  }
+  
+  let userRow = null;
+  // Deep-cell scanning for email match
+  for (let i = 1; i < values.length; i++) {
+    const rowEmail = values[i][emailCol].toString().trim().toLowerCase();
+    if (rowEmail === formattedEmail) {
+      userRow = values[i];
+      break;
+    }
+  }
+  
+  // 1st Lock: Identity Check
+  if (!userRow) {
+    throw new Error("I see you are writing from " + email + ", but I don't see that email in our performer records. Reenter your email.");
+  }
+  
+  // 2nd Lock: Authority Check & PIN Matching
+  const registeredPin = userRow[pinCol].toString().trim();
+  const firstDigit = pinStr.charAt(0);
+  
+  if (registeredPin !== pinStr || (firstDigit !== '2' && firstDigit !== '3')) {
+    throw new Error("I see you are writing from " + email + ", but I don't see that code associated to that email in our performer records. Carajo, did you forget your code?");
+  }
+  
+  const name = nameCol !== -1 ? userRow[nameCol] : "Performer";
+  const performerId = idCol !== -1 ? userRow[idCol] : "TD-UNKNOWN";
+  const clearance = firstDigit === '3' ? 'director' : 'performer';
+  
+  // Find gender and title columns dynamically
+  const genderCol = headers.findIndex(h => h.includes("gender") || h.includes("género") || h.includes("sexo"));
+  const titleCol = headers.findIndex(h => h.includes("title") || h.includes("título") || h.includes("role") || h.includes("puesto") || /\brol\b/.test(h));
+  
+  const gender = genderCol !== -1 ? userRow[genderCol].toString().trim() : "";
+  const title = titleCol !== -1 ? userRow[titleCol].toString().trim() : "";
+  
+  return {
+    success: true,
+    email: formattedEmail,
+    name: name,
+    performerId: performerId,
+    clearance: clearance,
+    gender: gender,
+    title: title
+  };
+}
+
+/**
+ * Direct credentials verification endpoint for client UI.
+ */
+function directValidateCredentials(email, pin) {
+  try {
+    return validateCredentials(email, pin);
+  } catch (error) {
+    return {
+      success: false,
+      error: error.message || error.toString()
+    };
+  }
+}
+

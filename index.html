@@ -1135,19 +1135,30 @@
       <div class="login-logo">&#x1f511;</div>
       <div>
         <h2 class="login-title">Private Access Portal</h2>
-        <p class="login-desc">Enter your email address to receive your secure, private access link for your assigned costumes and props.</p>
+        <p class="login-desc">Enter your email and PIN code to securely access your assigned costumes and props.</p>
       </div>
       
       <div class="form-group">
         <label for="performerEmail" class="form-label">Email Address</label>
-        <input type="email" id="performerEmail" class="form-input" placeholder="e.g. performer@gmail.com" required>
+        <input type="email" id="performerEmail" class="form-input" placeholder="e.g. performer@gmail.com" required autocomplete="email">
+      </div>
+
+      <div class="form-group" id="pinFormGroup">
+        <label for="performerPin" class="form-label">Authorization Code (PIN)</label>
+        <input type="password" id="performerPin" class="form-input" placeholder="Enter 4-6 digit PIN" maxlength="6" required autocomplete="current-password">
       </div>
       
       <button id="requestLinkBtn" class="btn btn-gold" style="width: 100%;">
-        Request Access Link
+        Log In
       </button>
+
+      <div style="text-align: center; margin-top: 1.25rem;">
+        <a href="#" id="toggleLoginModeBtn" style="color: var(--accent-gold); font-size: 0.85rem; text-decoration: none; font-weight: 600; cursor: pointer; transition: var(--transition-base);">
+          Request secure email link instead
+        </a>
+      </div>
       
-      <div id="loginFeedback" style="display: none; font-size: 0.85rem; font-weight: 500; padding: 0.5rem; border-radius: var(--radius-sm);"></div>
+      <div id="loginFeedback" style="display: none; font-size: 0.85rem; font-weight: 500; padding: 0.5rem; border-radius: var(--radius-sm); margin-top: 1rem;"></div>
     </div>
 
     <!-- 2. DASHBOARD / INVENTORY VIEW (If email is verified) -->
@@ -1243,9 +1254,17 @@
         loadingSub: "Syncing with the master database ledgers",
         loginTitle: "Private Access Portal",
         loginDesc: "Enter your email address to receive your secure, private access link for your assigned costumes and props.",
+        loginTitlePin: "Private Access Portal",
+        loginDescPin: "Enter your email and PIN code to securely access your assigned costumes and props.",
         emailLabel: "Email Address",
+        pinLabel: "Authorization Code (PIN)",
+        pinPlaceholder: "Enter 4-6 digit PIN",
         requestBtn: "Request Access Link",
+        loginBtn: "Log In",
+        loggingIn: "Logging in...",
         requesting: "Requesting...",
+        toggleToEmailMode: "Request secure email link instead",
+        toggleToPinMode: "Log in with email and PIN instead",
         totalAssigned: "Assigned",
         totalConfirmed: "Confirmed",
         totalPending: "Pending",
@@ -1268,6 +1287,7 @@
         checkingDb: "Checking our database ledger...",
         loadingProfile: "Loading profile inventory...",
         switcherAll: "👥 All Performers / Items",
+        switcherUnassigned: "🔓 Unassigned / Available Items",
         greeting: "Hola, ", // Standard greeting matching original Boricua flavor
         
         // Status select options
@@ -1289,6 +1309,7 @@
         toastAccessLinkSent: "Access link sent! Please check your email inbox.",
         toastSaveError: "Error saving updates: ",
         feedbackInvalidEmail: "Please enter a valid email address.",
+        feedbackInvalidPin: "Please enter your authorization PIN.",
         feedbackServerFailed: "Server connection failed: ",
         errorLoadingProfile: "Error Loading Profile"
       },
@@ -1297,9 +1318,17 @@
         loadingSub: "Sincronizando con los registros de la base de datos principal",
         loginTitle: "Portal de Acceso Privado",
         loginDesc: "Ingrese su dirección de correo electrónico para recibir su enlace de acceso privado y seguro para sus vestuarios y utilería asignados.",
+        loginTitlePin: "Portal de Acceso Privado",
+        loginDescPin: "Ingrese su correo y código PIN para acceder de forma segura a sus vestuarios y utilería asignados.",
         emailLabel: "Dirección de Correo Electrónico",
+        pinLabel: "Código de Autorización (PIN)",
+        pinPlaceholder: "Ingrese PIN de 4-6 dígitos",
         requestBtn: "Solicitar Enlace de Acceso",
+        loginBtn: "Iniciar Sesión",
+        loggingIn: "Iniciando sesión...",
         requesting: "Solicitando...",
+        toggleToEmailMode: "Solicitar enlace de correo seguro en su lugar",
+        toggleToPinMode: "Iniciar sesión con correo y PIN en su lugar",
         totalAssigned: "Asignados",
         totalConfirmed: "Confirmados",
         totalPending: "Pendientes",
@@ -1322,6 +1351,7 @@
         checkingDb: "Verificando el registro de la base de datos...",
         loadingProfile: "Cargando el inventario del perfil...",
         switcherAll: "👥 Todos los Bailarines / Artículos",
+        switcherUnassigned: "🔓 Artículos No Asignados / Disponibles",
         greeting: "Hola, ",
         
         // Status select options
@@ -1343,6 +1373,7 @@
         toastAccessLinkSent: "¡Enlace de acceso enviado! Por favor revise su bandeja de entrada.",
         toastSaveError: "Error al guardar actualizaciones: ",
         feedbackInvalidEmail: "Por favor, ingrese un correo electrónico válido.",
+        feedbackInvalidPin: "Por favor ingrese su PIN de autorización.",
         feedbackServerFailed: "Error de conexión con el servidor: ",
         errorLoadingProfile: "Error al cargar el perfil"
       }
@@ -1364,23 +1395,33 @@
         }
       }
       
-      // Translate simple string properties
+      // Translate simple string properties and toggle states based on loginMode
+      const isPinMode = state.loginMode === 'pin';
       if (document.querySelector('#loginView .login-title')) {
-        document.querySelector('#loginView .login-title').textContent = dict.loginTitle;
+        document.querySelector('#loginView .login-title').textContent = isPinMode ? dict.loginTitlePin : dict.loginTitle;
       }
       if (document.querySelector('#loginView .login-desc')) {
-        document.querySelector('#loginView .login-desc').textContent = dict.loginDesc;
+        document.querySelector('#loginView .login-desc').textContent = isPinMode ? dict.loginDescPin : dict.loginDesc;
       }
-      if (document.querySelector('#loginView .form-label')) {
-        document.querySelector('#loginView .form-label').textContent = dict.emailLabel;
+      if (document.querySelector('#loginView .form-group:nth-of-type(1) .form-label')) {
+        document.querySelector('#loginView .form-group:nth-of-type(1) .form-label').textContent = dict.emailLabel;
+      }
+      if (elements.pinFormGroup && elements.pinFormGroup.querySelector('.form-label')) {
+        elements.pinFormGroup.querySelector('.form-label').textContent = dict.pinLabel;
+      }
+      if (elements.performerPin) {
+        elements.performerPin.placeholder = dict.pinPlaceholder;
       }
       if (elements.requestLinkBtn) {
         if (!elements.requestLinkBtn.disabled) {
-          elements.requestLinkBtn.textContent = dict.requestBtn;
+          elements.requestLinkBtn.textContent = isPinMode ? dict.loginBtn : dict.requestBtn;
         }
       }
       if (elements.performerEmail) {
         elements.performerEmail.placeholder = lang === 'es' ? 'ej. performer@gmail.com' : 'e.g. performer@gmail.com';
+      }
+      if (elements.toggleLoginModeBtn) {
+        elements.toggleLoginModeBtn.textContent = isPinMode ? dict.toggleToEmailMode : dict.toggleToPinMode;
       }
       
       const loadingTitleEl = document.querySelector('#loadingView h3');
@@ -1422,7 +1463,11 @@
 
       // If switcher option exists
       if (elements.performerSelect && elements.performerSelect.options.length > 0) {
-        elements.performerSelect.options[0].textContent = dict.switcherAll;
+        for (let i = 0; i < elements.performerSelect.options.length; i++) {
+          const opt = elements.performerSelect.options[i];
+          if (opt.value === 'all') opt.textContent = dict.switcherAll;
+          else if (opt.value === 'unassigned') opt.textContent = dict.switcherUnassigned;
+        }
       }
       
       // Update header info dynamically
@@ -1489,7 +1534,51 @@
     function callAPI(action, payload, successCallback, failureCallback) {
       // 1. If running as a mock / standalone local fallback preview
       if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.port === "8000") {
-        if (action === "getInitialData") {
+        if (action === "login") {
+          setTimeout(() => {
+            const pinStr = payload.pin.toString();
+            const firstDigit = pinStr.charAt(0);
+            if (firstDigit === '2' || firstDigit === '3') {
+              const isAdmin = firstDigit === '3';
+              const name = isAdmin ? "Director" : "Mock Dancer";
+              successCallback({
+                success: true,
+                user: {
+                  success: true,
+                  email: payload.email,
+                  name: name,
+                  performerId: isAdmin ? "TD-DIR" : "TD-004",
+                  clearance: isAdmin ? "director" : "performer",
+                  gender: "M",
+                  title: isAdmin ? "Artistic Director" : "Dancer"
+                },
+                initialData: {
+                  email: payload.email,
+                  isAdminUser: isAdmin,
+                  items: isAdmin ? [
+                    { rowIndex: 2, id: "1", description: "Bomba Skirt - Red/White Flower Pattern", cost: "75", status: "Yes. I got it", assigned: "ednatradicion@gmail.com", type: "Bomba" },
+                    { rowIndex: 3, id: "2", description: "Plena Panderos Set (3 drums)", cost: "150", status: "Yes. I got it", assigned: "ednatradicion@gmail.com", type: "Plena" },
+                    { rowIndex: 11, id: "12", description: "Director Megaphone - High Power", cost: "85", status: "Yes. I got it", assigned: payload.email, type: "Equipment" }
+                  ] : [
+                    { rowIndex: 9, id: "10", description: "Danza Hat - Traditional Straw", cost: "25", status: "Yes. I got it", assigned: payload.email, type: "Danza" },
+                    { rowIndex: 10, id: "11", description: "Spanish Castanets - Handcrafted Oak", cost: "40", status: "-", assigned: payload.email, type: "Props" }
+                  ],
+                  performersList: [
+                    { email: payload.email, name: name },
+                    { email: "demo@gmail.com", name: "Demo Performer" },
+                    { email: "rodriguez2113@gmail.com", name: "Director" }
+                  ],
+                  errorMsg: ""
+                }
+              });
+            } else {
+              successCallback({
+                success: false,
+                error: "I see you are writing from " + payload.email + ", but I don't see that code associated to that email in our performer records. Carajo, did you forget your code?"
+              });
+            }
+          }, 800);
+        } else if (action === "getInitialData") {
           setTimeout(() => {
             successCallback({
               email: payload.email,
@@ -1595,7 +1684,8 @@
       isAdmin: IS_ADMIN,
       performers: INITIAL_PERFORMERS,
       selectedPerformer: 'all',
-      language: 'en'
+      language: 'en',
+      loginMode: 'pin'
     };
 
     // Load saved language settings
@@ -1636,7 +1726,10 @@
       performerSelectContainer: document.getElementById('performerSelectContainer'),
       logoutBtn: document.getElementById('logoutBtn'),
       typeFilterSelect: document.getElementById('typeFilterSelect'),
-      sortSelect: document.getElementById('sortSelect')
+      sortSelect: document.getElementById('sortSelect'),
+      performerPin: document.getElementById('performerPin'),
+      pinFormGroup: document.getElementById('pinFormGroup'),
+      toggleLoginModeBtn: document.getElementById('toggleLoginModeBtn')
     };
 
     // Initialize application
@@ -1965,10 +2058,31 @@
         });
       }
       
-      // Request login link
-      elements.requestLinkBtn.addEventListener('click', handleRequestLink);
+      // Auth submit
+      elements.requestLinkBtn.addEventListener('click', handleAuthSubmit);
       elements.performerEmail.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') handleRequestLink();
+        if (e.key === 'Enter') handleAuthSubmit();
+      });
+      elements.performerPin.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') handleAuthSubmit();
+      });
+
+      // Toggle Login Mode
+      elements.toggleLoginModeBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        state.loginMode = state.loginMode === 'pin' ? 'email' : 'pin';
+        
+        if (state.loginMode === 'pin') {
+          elements.pinFormGroup.style.display = 'block';
+          elements.performerPin.required = true;
+        } else {
+          elements.pinFormGroup.style.display = 'none';
+          elements.performerPin.required = false;
+        }
+        
+        applyLanguage();
+        elements.performerPin.value = "";
+        elements.loginFeedback.style.display = 'none';
       });
 
       // Lightbox close
@@ -1991,6 +2105,77 @@
       elements.dashboardView.style.display = 'none';
       elements.viewSelectContainer.style.display = 'none';
       elements.logoutBtn.style.display = 'none';
+      
+      if (state.loginMode === 'pin') {
+        elements.pinFormGroup.style.display = 'block';
+        elements.performerPin.required = true;
+      } else {
+        elements.pinFormGroup.style.display = 'none';
+        elements.performerPin.required = false;
+      }
+      applyLanguage();
+    }
+
+    // Router for authentication submission
+    function handleAuthSubmit() {
+      if (state.loginMode === 'pin') {
+        handleLogin();
+      } else {
+        handleRequestLink();
+      }
+    }
+
+    // Handle credentials validation submitting to server
+    function handleLogin() {
+      const email = elements.performerEmail.value.trim();
+      const pin = elements.performerPin.value.trim();
+      const dict = i18n[state.language || 'en'];
+      
+      if (!email) {
+        showFeedback(dict.feedbackInvalidEmail, "error");
+        return;
+      }
+      if (!pin) {
+        showFeedback(dict.feedbackInvalidPin, "error");
+        return;
+      }
+
+      setLoadingState(true);
+      showFeedback(state.language === 'es' ? "Verificando credenciales..." : "Validating credentials...", "info");
+
+      callAPI(
+        "login",
+        { email: email, pin: pin },
+        (response) => {
+          setLoadingState(false);
+          if (response.success) {
+            showToast(dict.toastProfileLoaded, "success");
+            
+            // Populate state with return credentials and initialData
+            const user = response.user;
+            const initData = response.initialData;
+            
+            state.email = user.email;
+            state.name = user.name;
+            state.isAdmin = user.clearance === 'director';
+            state.items = initData.items || [];
+            state.performers = initData.performersList || [];
+            state.selectedPerformer = "all";
+            
+            elements.performerEmail.value = "";
+            elements.performerPin.value = "";
+            
+            populateTypeFilter();
+            renderDashboard();
+          } else {
+            showFeedback(response.error, "error");
+          }
+        },
+        (error) => {
+          setLoadingState(false);
+          showFeedback(dict.feedbackServerFailed + error.toString(), "error");
+        }
+      );
     }
 
     // Handle access request submitting to server
@@ -2028,10 +2213,15 @@
     function setLoadingState(isLoading) {
       elements.requestLinkBtn.disabled = isLoading;
       elements.performerEmail.disabled = isLoading;
+      if (elements.performerPin) elements.performerPin.disabled = isLoading;
+      
+      const dict = i18n[state.language || 'en'];
+      const isPinMode = state.loginMode === 'pin';
+      
       if (isLoading) {
-        elements.requestLinkBtn.innerHTML = `<span class="spinner" style="display:inline-block; vertical-align:middle; margin-right:5px;"></span> Requesting...`;
+        elements.requestLinkBtn.innerHTML = `<span class="spinner" style="display:inline-block; vertical-align:middle; margin-right:5px;"></span> ${isPinMode ? dict.loggingIn : dict.requesting}`;
       } else {
-        elements.requestLinkBtn.innerHTML = "Request Access Link";
+        elements.requestLinkBtn.innerHTML = isPinMode ? dict.loginBtn : dict.requestBtn;
       }
     }
 
@@ -2063,14 +2253,20 @@
 
       // Setup Administrator switcher
       if (state.isAdmin) {
+        const dict = i18n[state.language || 'en'];
         elements.performerSelectContainer.style.display = 'block';
         if (elements.performerSelect.options.length === 0) {
           elements.performerSelect.innerHTML = "";
           
           const allOpt = document.createElement('option');
           allOpt.value = "all";
-          allOpt.textContent = "\ud83d\udc65 All Performers / Items";
+          allOpt.textContent = dict.switcherAll;
           elements.performerSelect.appendChild(allOpt);
+          
+          const unassignedOpt = document.createElement('option');
+          unassignedOpt.value = "unassigned";
+          unassignedOpt.textContent = dict.switcherUnassigned;
+          elements.performerSelect.appendChild(unassignedOpt);
           
           (state.performers || []).forEach(perf => {
             if (perf && perf.email) {
