@@ -25,6 +25,7 @@
 
 // Authoritative Spreadsheet ID
 const INVENTORY_SPREADSHEET_ID = "1IPZznR7kK-oCoThEHmACgMOW6KJfP8NSwzGKv3q-ITY";
+const MASTER_SOURCE_SPREADSHEET_ID = "1u-kw9x5WJPO5NgvkH0-B8bNPWPLvVF28myNvbkc9pFk";
 
 // Authorized Administrator Emails (Director and Subdirector)
 const ADMIN_EMAILS = ["rodriguez2113@gmail.com", "darienl140@gmail.com"];
@@ -175,12 +176,23 @@ function getInventorySpreadsheet() {
 }
 
 /**
+ * Resolves the Master Source Google Sheet instance (for Profiles/Crosswalk).
+ */
+function getMasterSourceSpreadsheet() {
+  try {
+    return SpreadsheetApp.openById(MASTER_SOURCE_SPREADSHEET_ID);
+  } catch (err) {
+    return getInventorySpreadsheet();
+  }
+}
+
+/**
  * Attempts to retrieve a user's name from a "Profiles" sheet if it exists,
  * fallback to formatting the email.
  */
 function getPerformerNameFromProfile(email) {
   try {
-    const ss = getInventorySpreadsheet();
+    const ss = getMasterSourceSpreadsheet();
     const profilesSheet = ss.getSheetByName("Profiles") || ss.getSheetByName("Profile") || ss.getSheetByName("Sheet1") || ss.getSheetByName("Crosswalk");
     if (!profilesSheet) return "";
     
@@ -226,7 +238,8 @@ function getPerformersList() {
     
     // Scan profiles to map emails to names
     try {
-      const profilesSheet = ss.getSheetByName("Profiles") || ss.getSheetByName("Profile") || ss.getSheetByName("Sheet1") || ss.getSheetByName("Crosswalk");
+      const profilesSS = getMasterSourceSpreadsheet();
+      const profilesSheet = profilesSS.getSheetByName("Profiles") || profilesSS.getSheetByName("Profile") || profilesSS.getSheetByName("Sheet1") || profilesSS.getSheetByName("Crosswalk");
       if (profilesSheet) {
         const profileValues = profilesSheet.getDataRange().getValues();
         if (profileValues.length > 1) {
@@ -786,7 +799,7 @@ function validateCredentials(email, pin) {
   const pinStr = pin.toString().trim();
   
   // Get spreadsheet instance
-  const ss = getInventorySpreadsheet();
+  const ss = getMasterSourceSpreadsheet();
   const profilesSheet = ss.getSheetByName("Profiles") || ss.getSheetByName("Profile") || ss.getSheetByName("Sheet1") || ss.getSheetByName("Crosswalk");
   if (!profilesSheet) {
     throw new Error("System Error: Credentials database ledger ('Profiles' or 'Profile') not found in spreadsheet.");
