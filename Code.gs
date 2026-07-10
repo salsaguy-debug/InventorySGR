@@ -143,6 +143,17 @@ function doPost(e) {
       return ContentService.createTextOutput(JSON.stringify(result))
         .setMimeType(ContentService.MimeType.JSON);
     }
+    if (postData.action === "emailFilteredList") {
+      const result = emailFilteredInventoryList(
+        postData.email,
+        postData.recipientEmail,
+        postData.items,
+        postData.filterType,
+        postData.statusFilter
+      );
+      return ContentService.createTextOutput(JSON.stringify(result))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
     return ContentService.createTextOutput(JSON.stringify({ success: false, error: "Invalid action" }))
       .setMimeType(ContentService.MimeType.JSON);
   } catch (err) {
@@ -324,6 +335,9 @@ function getAllInventory() {
   if (typeCol === -1) {
     typeCol = lowerHeaders.indexOf("types");
   }
+  const locationCol = lowerHeaders.indexOf("inventory location") !== -1
+    ? lowerHeaders.indexOf("inventory location")
+    : lowerHeaders.indexOf("location");
   
   const performerNotesCol = getOrCreatePerformerNotesColumn(sheet, lowerHeaders);
   
@@ -348,6 +362,7 @@ function getAllInventory() {
     const currentStatus = statusCol !== -1 && row.length > statusCol ? row[statusCol].toString().trim() : "-";
     const notes = performerNotesCol !== -1 && row.length > performerNotesCol ? row[performerNotesCol].toString().trim() : "";
     const itemType = typeCol !== -1 && row.length > typeCol ? row[typeCol].toString().trim() : "General";
+    const location = locationCol !== -1 && row.length > locationCol ? row[locationCol].toString().trim() : "N/A";
     
     items.push({
       rowIndex: i + 1,
@@ -358,7 +373,8 @@ function getAllInventory() {
       status: currentStatus || "-",
       notes: notes,
       assigned: rowEmail,
-      type: itemType
+      type: itemType,
+      location: location
     });
   }
   
@@ -420,6 +436,9 @@ function getPerformerInventory(email) {
   if (typeCol === -1) {
     typeCol = lowerHeaders.indexOf("types");
   }
+  const locationCol = lowerHeaders.indexOf("inventory location") !== -1
+    ? lowerHeaders.indexOf("inventory location")
+    : lowerHeaders.indexOf("location");
   
   if (assignedCol === -1) {
     throw new Error("System Error: 'Assigned' performer column was not found in the spreadsheet headers.");
@@ -452,6 +471,7 @@ function getPerformerInventory(email) {
       const currentStatus = statusCol !== -1 ? row[statusCol].toString().trim() : "-";
       const notes = performerNotesCol !== -1 && row.length > performerNotesCol ? row[performerNotesCol].toString().trim() : "";
       const itemType = typeCol !== -1 && row.length > typeCol ? row[typeCol].toString().trim() : "General";
+      const location = locationCol !== -1 && row.length > locationCol ? row[locationCol].toString().trim() : "N/A";
       
       items.push({
         rowIndex: i + 1, // 1-based spreadsheet row number
@@ -461,7 +481,8 @@ function getPerformerInventory(email) {
         cost: replacementCost,
         status: currentStatus || "-",
         notes: notes,
-        type: itemType
+        type: itemType,
+        location: location
       });
     }
   }
@@ -882,6 +903,94 @@ function directValidateCredentials(email, pin) {
       success: false,
       error: error.message || error.toString()
     };
+  }
+}
+
+/**
+ * Emails a filtered list of inventory items.
+ */
+function emailFilteredInventoryList(userEmail, recipientEmail, items, filterType, statusFilter) {
+  try {
+    if (!recipientEmail) {
+      throw new Error("Recipient email is required.");
+    }
+    
+    // Formatting the name from email
+    const performerName = formatEmailToName(recipientEmail);
+    const subject = `Tradición Inventory Checklist — ${performerName}`;
+    
+    let tableRowsHtml = "";
+    items.forEach(item => {
+      const statusText = item.status || "-";
+      let statusColor = "#64748b"; // gray
+      if (statusText === "Yes. I got it") statusColor = "#16a34a"; // green
+      else if (statusText === "I returned it") statusColor = "#2563eb"; // blue
+      else if (statusText === "I never received it.") statusColor = "#dc2626"; // red
+      else if (statusText !== "-") statusColor = "#d97706"; // gold
+      
+      tableRowsHtml += `
+        <tr style="border-bottom: 1px solid #e2e8f0;">
+          <td style="padding: 12px 10px; font-weight: bold; color: #1e293b;">${item.id || 'N/A'}</td>
+          <td style="padding: 12px 10px; color: #334155;">
+            <div style="font-weight: 600; color: #0f172a;">${item.description}</div>
+            <div style="font-size: 11px; color: #64748b; margin-top: 2px;">Type: ${item.type || 'General'} | Cost: $${item.cost || 'N/A'}</div>
+          </td>
+          <td style="padding: 12px 10px; font-weight: 600; color: ${statusColor};">${statusText}</td>
+          <td style="padding: 12px 10px; color: #475569; font-size: 13px; font-style: italic;">${item.notes || ''}</td>
+          <td style="padding: 12px 10px; color: #334155;">${item.location || 'N/A'}</td>
+        </tr>
+      `;
+    });
+    
+    const filterInfo = `Filtered by Type: <strong>${filterType}</strong> | Status: <strong>${statusFilter}</strong>`;
+    
+    const body = `
+      <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 650px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; padding: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); background-color: #ffffff;">
+        <div style="text-align: center; border-bottom: 2px solid #ef4444; padding-bottom: 20px; margin-bottom: 25px;">
+          <h2 style="color: #0f172a; margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.5px;">Tradición Costume & Prop Checklist</h2>
+          <p style="color: #64748b; margin: 5px 0 0 0; font-size: 14px;">Authoritative Performer Ledger</p>
+        </div>
+        
+        <p style="font-size: 16px; color: #1e293b; line-height: 1.6;">
+          Hola, <strong>${performerName}</strong>! Below is your inventory checklist filtered and sent from your portal:
+        </p>
+        
+        <div style="background-color: #f8fafc; padding: 10px 15px; border-radius: 8px; font-size: 12px; color: #475569; border: 1px solid #cbd5e1; margin-bottom: 20px;">
+          ${filterInfo}
+        </div>
+        
+        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; margin-bottom: 25px;">
+          <thead>
+            <tr style="background-color: #f1f5f9; border-bottom: 2px solid #cbd5e1;">
+              <th style="padding: 10px; color: #475569; font-weight: 700;">ID</th>
+              <th style="padding: 10px; color: #475569; font-weight: 700;">Item Description</th>
+              <th style="padding: 10px; color: #475569; font-weight: 700;">Status</th>
+              <th style="padding: 10px; color: #475569; font-weight: 700;">Notes</th>
+              <th style="padding: 10px; color: #475569; font-weight: 700;">Location</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tableRowsHtml}
+          </tbody>
+        </table>
+        
+        <div style="margin-top: 35px; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 20px;">
+          <p style="font-size: 12px; color: #94a3b8; margin: 0;">Salsa Guy Richmond, LLC / Tradici&oacute;n Dance Company</p>
+          <p style="font-size: 12px; color: #ef4444; font-weight: bold; margin-top: 5px;">Smile, Jesus loves you 🙂</p>
+        </div>
+      </div>
+    `;
+    
+    MailApp.sendEmail({
+      to: recipientEmail,
+      subject: subject,
+      htmlBody: body
+    });
+    
+    return { success: true, message: "Email sent successfully to: " + recipientEmail };
+  } catch (error) {
+    Logger.log("Error in emailFilteredInventoryList: " + error.toString());
+    return { success: false, error: error.message || error.toString() };
   }
 }
 

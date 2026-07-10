@@ -346,6 +346,27 @@
       padding: 0.5rem 1rem;
       text-align: center;
       min-width: 80px;
+      cursor: pointer;
+      user-select: none;
+      transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base);
+    }
+    
+    .stat-badge:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-sm);
+      border-color: var(--accent-gold);
+    }
+    
+    .stat-badge.active {
+      border-color: var(--accent-gold);
+      background-color: rgba(245, 197, 66, 0.1);
+      box-shadow: 0 0 0 2px rgba(245, 197, 66, 0.25);
+    }
+    
+    [data-theme="light"] .stat-badge.active {
+      border-color: #b45309;
+      background-color: rgba(180, 83, 9, 0.08);
+      box-shadow: 0 0 0 2px rgba(180, 83, 9, 0.2);
     }
 
     .stat-val {
@@ -443,12 +464,18 @@
       background-color: rgba(15, 23, 42, 0.85);
       backdrop-filter: blur(4px);
       border: 1px solid var(--border-color);
-      color: var(--accent-gold);
+      color: #fbbf24;
       padding: 0.3rem 0.65rem;
       font-size: 0.85rem;
       font-weight: 700;
       border-radius: var(--radius-sm);
       font-family: 'Outfit', sans-serif;
+    }
+    
+    [data-theme="light"] .cost-tag {
+      background-color: rgba(255, 255, 255, 0.9);
+      color: #b45309;
+      border-color: rgba(180, 83, 9, 0.35);
     }
 
     .id-tag {
@@ -1001,8 +1028,25 @@
     }
     
     .meta-badge.badge-gold {
-      color: var(--accent-gold);
-      border-color: rgba(245, 197, 66, 0.25);
+      color: #fbbf24;
+      border-color: rgba(251, 191, 36, 0.25);
+      background-color: rgba(251, 191, 36, 0.05);
+    }
+    [data-theme="light"] .meta-badge.badge-gold {
+      color: #b45309;
+      border-color: rgba(180, 83, 9, 0.35);
+      background-color: rgba(180, 83, 9, 0.05);
+    }
+
+    .meta-badge.badge-location {
+      color: #10b981;
+      border-color: rgba(16, 185, 129, 0.25);
+      background-color: rgba(16, 185, 129, 0.05);
+    }
+    [data-theme="light"] .meta-badge.badge-location {
+      color: #047857;
+      border-color: rgba(4, 120, 87, 0.35);
+      background-color: rgba(4, 120, 87, 0.05);
     }
 
     .meta-badge.badge-type {
@@ -1195,6 +1239,20 @@
             </select>
           </div>
         </div>
+        <div class="toolbar-actions" style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+          <button id="downloadListBtn" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; height: 34px;">
+            <svg style="width: 14px; height: 14px; stroke: currentColor;" fill="none" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+            </svg>
+            <span>Download CSV</span>
+          </button>
+          <button id="emailListBtn" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; height: 34px;">
+            <svg style="width: 14px; height: 14px; stroke: currentColor;" fill="none" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 19v-8.93a2 2 0 01.89-1.664l8-5.333a2 2 0 012.22 0l8 5.333A2 2 0 0121 10.07V19M3 19a2 2 0 002 2h14a2 2 0 002-2M3 19l6.75-4.5M21 19l-6.75-4.5m0 0l-2.25-1.5a2 2 0 00-2.22 0l-2.25 1.5M12 11.25V5"></path>
+            </svg>
+            <span>Email List</span>
+          </button>
+        </div>
         <div class="toolbar-right" style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
           <span style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px;">Sort:</span>
           <div class="view-select-container">
@@ -1279,6 +1337,7 @@
         costLabel: "Cost:",
         typeLabel: "Type:",
         assignedLabel: "Assigned:",
+        locationLabel: "Location:",
         saved: "Saved!",
         saving: "Saving...",
         typing: "Typing...",
@@ -1343,6 +1402,7 @@
         costLabel: "Costo:",
         typeLabel: "Tipo:",
         assignedLabel: "Asignado:",
+        locationLabel: "Ubicación:",
         saved: "¡Guardado!",
         saving: "Guardando...",
         typing: "Escribiendo...",
@@ -1435,6 +1495,13 @@
       if (confirmedLbl) confirmedLbl.textContent = dict.totalConfirmed;
       const pendingLbl = document.querySelector('.stats-container .stat-badge:nth-child(3) .stat-lbl');
       if (pendingLbl) pendingLbl.textContent = dict.totalPending;
+
+      if (elements.downloadListBtn) {
+        elements.downloadListBtn.querySelector('span').textContent = lang === 'es' ? "Descargar CSV" : "Download CSV";
+      }
+      if (elements.emailListBtn) {
+        elements.emailListBtn.querySelector('span').textContent = lang === 'es' ? "Enviar Lista" : "Email List";
+      }
 
       const labelFilter = document.querySelector('.dashboard-toolbar .toolbar-left span');
       if (labelFilter) labelFilter.textContent = dict.filterLabel;
@@ -1685,7 +1752,8 @@
       performers: INITIAL_PERFORMERS,
       selectedPerformer: 'all',
       language: 'en',
-      loginMode: 'pin'
+      loginMode: 'pin',
+      statusFilter: 'all'
     };
 
     // Load saved language settings
@@ -1727,6 +1795,8 @@
       logoutBtn: document.getElementById('logoutBtn'),
       typeFilterSelect: document.getElementById('typeFilterSelect'),
       sortSelect: document.getElementById('sortSelect'),
+      downloadListBtn: document.getElementById('downloadListBtn'),
+      emailListBtn: document.getElementById('emailListBtn'),
       performerPin: document.getElementById('performerPin'),
       pinFormGroup: document.getElementById('pinFormGroup'),
       toggleLoginModeBtn: document.getElementById('toggleLoginModeBtn')
@@ -1882,6 +1952,12 @@
       state.isAdmin = response.isAdminUser;
       state.performers = response.performersList || [];
       state.selectedPerformer = "all";
+      state.statusFilter = "all";
+      
+      // Reset active stat badge UI
+      const badges = document.querySelectorAll('.stats-container .stat-badge');
+      badges.forEach(b => b.classList.remove('active'));
+      if (badges[0]) badges[0].classList.add('active');
       
       if (state.email) {
         populateTypeFilter();
@@ -1966,6 +2042,12 @@
       state.selectedPerformer = selectedEmail;
       const dict = i18n[state.language || 'en'];
       
+      // Reset status filter
+      state.statusFilter = 'all';
+      const badges = document.querySelectorAll('.stats-container .stat-badge');
+      badges.forEach(b => b.classList.remove('active'));
+      if (badges[0]) badges[0].classList.add('active');
+      
       // Show loading spinner inside the items container
       elements.itemsContainer.innerHTML = `
         <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 2rem; color: var(--text-muted);">
@@ -2004,6 +2086,7 @@
       state.isAdmin = false;
       state.performers = [];
       state.selectedPerformer = "all";
+      state.statusFilter = "all";
       
       // Clear URL parameters
       if (window.history && window.history.replaceState) {
@@ -2055,6 +2138,34 @@
       if (elements.sortSelect) {
         elements.sortSelect.addEventListener('change', () => {
           renderInventoryCards();
+        });
+      }
+      
+      if (elements.downloadListBtn) {
+        elements.downloadListBtn.addEventListener('click', downloadInventoryCSV);
+      }
+      if (elements.emailListBtn) {
+        elements.emailListBtn.addEventListener('click', emailFilteredList);
+      }
+
+      // Click handlers for stats badges to filter by status
+      const badgeTotal = document.querySelector('.stats-container .stat-badge:nth-child(1)');
+      const badgeConfirmed = document.querySelector('.stats-container .stat-badge:nth-child(2)');
+      const badgePending = document.querySelector('.stats-container .stat-badge:nth-child(3)');
+
+      if (badgeTotal) {
+        badgeTotal.addEventListener('click', () => {
+          setStatusFilter('all');
+        });
+      }
+      if (badgeConfirmed) {
+        badgeConfirmed.addEventListener('click', () => {
+          setStatusFilter('confirmed');
+        });
+      }
+      if (badgePending) {
+        badgePending.addEventListener('click', () => {
+          setStatusFilter('pending');
         });
       }
       
@@ -2365,11 +2476,7 @@
       return cleanUrl;
     }
 
-    function renderInventoryCards() {
-      elements.itemsContainer.innerHTML = "";
-      applyViewClass();
-
-      const dict = i18n[state.language || 'en'];
+    function getFilteredItems() {
       let itemsList = Array.isArray(state.items) ? [...state.items] : [];
 
       // Filter by Type
@@ -2377,6 +2484,130 @@
       if (selectedType && selectedType !== 'all') {
         itemsList = itemsList.filter(item => item && item.type === selectedType);
       }
+
+      // Filter by Status (Total / Confirmed / Pending)
+      if (state.statusFilter === 'confirmed') {
+        itemsList = itemsList.filter(item => item && item.status && item.status.trim() !== "" && item.status.trim() !== "-");
+      } else if (state.statusFilter === 'pending') {
+        itemsList = itemsList.filter(item => !item || !item.status || item.status.trim() === "" || item.status.trim() === "-");
+      }
+      
+      return itemsList;
+    }
+
+    function setStatusFilter(filter) {
+      state.statusFilter = filter;
+      
+      // Update active classes on badges
+      const badges = document.querySelectorAll('.stats-container .stat-badge');
+      badges.forEach(b => b.classList.remove('active'));
+      
+      if (filter === 'all' && badges[0]) badges[0].classList.add('active');
+      else if (filter === 'confirmed' && badges[1]) badges[1].classList.add('active');
+      else if (filter === 'pending' && badges[2]) badges[2].classList.add('active');
+      
+      renderInventoryCards();
+    }
+
+    function downloadInventoryCSV() {
+      const itemsList = getFilteredItems();
+      if (itemsList.length === 0) {
+        showToast(state.language === 'es' ? "No hay artículos para descargar" : "No items to download", "error");
+        return;
+      }
+
+      // Headers
+      const headers = [
+        "Item ID",
+        "Description",
+        "Type/Category",
+        "Replacement Cost",
+        "Status",
+        "Performer Notes",
+        "Location",
+        "Assigned To"
+      ];
+
+      const csvRows = [headers.join(",")];
+
+      itemsList.forEach(item => {
+        const row = [
+          `"${(item.id || '').replace(/"/g, '""')}"`,
+          `"${(item.description || '').replace(/"/g, '""')}"`,
+          `"${(item.type || 'General').replace(/"/g, '""')}"`,
+          `"${(item.cost || 'N/A').replace(/"/g, '""')}"`,
+          `"${(item.status || '-').replace(/"/g, '""')}"`,
+          `"${(item.notes || '').replace(/"/g, '""')}"`,
+          `"${(item.location || 'N/A').replace(/"/g, '""')}"`,
+          `"${(item.assigned || 'Unassigned').replace(/"/g, '""')}"`
+        ];
+        csvRows.push(row.join(","));
+      });
+
+      const csvContent = "\uFEFF" + csvRows.join("\n");
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      
+      const fileName = `Tradicion_Inventory_${state.name ? state.name.replace(/\s+/g, '_') : 'Export'}.csv`;
+      link.setAttribute("download", fileName);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      showToast(state.language === 'es' ? "¡Descargado con éxito!" : "CSV downloaded successfully!", "success");
+    }
+
+    function emailFilteredList() {
+      const itemsList = getFilteredItems();
+      if (itemsList.length === 0) {
+        showToast(state.language === 'es' ? "No hay artículos para enviar" : "No items to send", "error");
+        return;
+      }
+
+      const defaultEmail = state.selectedPerformer !== 'all' && state.selectedPerformer !== 'unassigned' ? state.selectedPerformer : state.email;
+      const promptMsg = state.language === 'es' 
+        ? "Ingrese el correo electrónico del destinatario:" 
+        : "Enter the recipient's email address:";
+      const recipientEmail = prompt(promptMsg, defaultEmail);
+      if (!recipientEmail || recipientEmail.trim() === "") return;
+
+      const emailVal = recipientEmail.trim().toLowerCase();
+      if (emailVal.indexOf('@') === -1) {
+        showToast(state.language === 'es' ? "Correo electrónico no válido" : "Invalid email address", "error");
+        return;
+      }
+
+      showToast(state.language === 'es' ? "Enviando correo electrónico..." : "Sending email...", "info");
+
+      const filterType = elements.typeFilterSelect ? elements.typeFilterSelect.value : 'all';
+      const statusFilter = state.statusFilter || 'all';
+
+      callAPI('emailFilteredList', {
+        email: state.email,
+        recipientEmail: emailVal,
+        items: itemsList,
+        filterType: filterType,
+        statusFilter: statusFilter
+      }, (res) => {
+        if (res.success) {
+          showToast(state.language === 'es' ? "¡Correo enviado con éxito!" : "Email sent successfully!", "success");
+        } else {
+          showToast((state.language === 'es' ? "Error al enviar: " : "Failed to send: ") + (res.error || ""), "error");
+        }
+      }, (err) => {
+        showToast((state.language === 'es' ? "Error de red: " : "Network error: ") + err.toString(), "error");
+      });
+    }
+
+    function renderInventoryCards() {
+      elements.itemsContainer.innerHTML = "";
+      applyViewClass();
+
+      const dict = i18n[state.language || 'en'];
+      let itemsList = getFilteredItems();
 
       // Sort Items
       const selectedSort = elements.sortSelect ? elements.sortSelect.value : 'id-asc';
@@ -2467,6 +2698,7 @@
                 <span class="meta-badge badge-gold">${dict.costLabel} ${item.cost || 'N/A'}</span>
                 <span class="meta-badge badge-type">${dict.typeLabel} ${item.type || 'General'}</span>
                 ${state.isAdmin ? `<span class="meta-badge" style="color: var(--info-blue); border-color: rgba(59, 130, 246, 0.25);">${dict.assignedLabel} ${item.assigned || 'Unassigned'}</span>` : ''}
+                <span class="meta-badge badge-location">${dict.locationLabel || 'Location:'} ${item.location || 'N/A'}</span>
               </div>
             </div>
             
