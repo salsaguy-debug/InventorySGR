@@ -3188,6 +3188,7 @@
         else if (item.status === "Yes I have one with a diferent number. See \"PERFORMER NOTES\" NOTES" || item.status === "Yes, I have the item with a different number. (See Performer Notes)") selectClass = "val-different";
 
         // Image Section
+        const formattedCost = item.cost ? (item.cost.toString().trim().startsWith('$') ? item.cost.toString().trim() : '$' + item.cost.toString().trim()) : 'N/A';
         const convertedImgUrl = convertDropboxUrl(item.picUrl);
         let imageHtml = "";
         
@@ -3209,14 +3210,14 @@
           <div class="item-image-box" onclick="zoomImage('${convertedImgUrl}', '${item.description}')">
             ${imageHtml}
             <span class="id-tag">ID: ${item.id || 'N/A'}</span>
-            <span class="cost-tag">${dict.costLabel} ${item.cost || 'N/A'}</span>
+            <span class="cost-tag">${dict.costLabel} ${formattedCost}</span>
           </div>
           <div class="item-content">
             <div class="item-info">
               <h3 class="item-title">${item.description}</h3>
               <div class="item-meta-badges">
                 <span class="meta-badge">ID: ${item.id || 'N/A'}</span>
-                <span class="meta-badge badge-gold">${dict.costLabel} ${item.cost || 'N/A'}</span>
+                <span class="meta-badge badge-gold">${dict.costLabel} ${formattedCost}</span>
                 <span class="meta-badge badge-type">${dict.typeLabel} ${item.type || 'General'}</span>
                 ${state.isAdmin ? `<span class="meta-badge" style="color: var(--info-blue); border-color: rgba(59, 130, 246, 0.25);">${dict.assignedLabel} ${item.assigned || 'Unassigned'}</span>` : ''}
                 <span class="meta-badge badge-location">${dict.locationLabel || 'Location:'} ${item.location || 'N/A'}</span>
