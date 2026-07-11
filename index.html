@@ -1064,53 +1064,220 @@
       display: none;
     }
 
+    /* Side Drawer Navigation & Overlays */
+    .side-drawer {
+      position: fixed;
+      top: 0;
+      left: -280px;
+      width: 280px;
+      height: 100%;
+      background-color: var(--bg-card);
+      border-right: 1px solid var(--border-color);
+      z-index: 3000;
+      transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--shadow-lg);
+    }
+    .side-drawer.active {
+      left: 0;
+    }
+    .drawer-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(2px);
+      z-index: 2900;
+      display: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .drawer-overlay.active {
+      display: block;
+      opacity: 1;
+    }
+    .drawer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .drawer-title {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 1.2rem;
+      color: var(--text-main);
+    }
+    .close-drawer-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.75rem;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition-base);
+    }
+    .close-drawer-btn:hover {
+      color: var(--text-main);
+    }
+    .drawer-content {
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      flex-grow: 1;
+    }
+    .drawer-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .drawer-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .drawer-select {
+      width: 100%;
+      background-color: var(--bg-input);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 0.6rem 0.8rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      outline: none;
+      cursor: pointer;
+    }
+
+    /* Mobile settings toggles */
+    .mobile-filter-btn {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+      background-color: var(--bg-input);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: var(--transition-base);
+    }
+    .mobile-filter-btn:hover {
+      background-color: var(--border-color);
+    }
+
+    /* Mobile bottom sheet overlay background */
+    .sheet-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(2px);
+      z-index: 1400;
+      display: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .sheet-overlay.active {
+      display: block;
+      opacity: 1;
+    }
+
+    .sheet-header {
+      display: none;
+    }
+
     /* Responsive adjustments */
     @media (max-width: 640px) {
       .login-card {
         margin: 2rem auto !important;
         padding: 1.5rem !important;
       }
+      .mobile-filter-btn {
+        display: inline-flex;
+      }
+      .sheet-header {
+        display: flex !important;
+      }
       .header-actions {
-        width: 100% !important;
-        justify-content: space-between !important;
+        width: auto !important;
+        flex-wrap: nowrap !important;
         gap: 0.5rem !important;
-        flex-wrap: wrap !important;
       }
-      .header-actions .view-select-container {
-        flex: 1 1 auto;
-      }
-      .header-actions .view-select {
-        width: 100% !important;
+      /* Hide these elements from mobile header, they are inside the side drawer */
+      #performerSelectContainer,
+      #viewSelectContainer,
+      #logoutBtn {
+        display: none !important;
       }
       .performer-card {
         flex-direction: column;
         align-items: flex-start;
       }
       .stats-container {
-        width: 100%;
-        justify-content: space-between;
-        gap: 0.5rem !important;
+        width: 100% !important;
+        justify-content: space-between !important;
+        gap: 0.4rem !important;
       }
       .stat-badge {
-        padding: 0.4rem 0.5rem !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 0.3rem !important;
+        padding: 0.3rem 0.6rem !important;
         min-width: 0 !important;
-        flex: 1;
+        flex: 1 !important;
+        border-radius: 20px !important;
       }
       .stat-val {
-        font-size: 1.25rem !important;
+        font-size: 1.05rem !important;
+        line-height: 1 !important;
+      }
+      .stat-lbl {
+        font-size: 0.7rem !important;
+        margin-top: 0 !important;
+        text-transform: capitalize !important;
       }
       .brand-title {
         font-size: 1.15rem;
       }
+      
+      /* Bottom Sheet Mobile Drawer style for Toolbar */
       .dashboard-toolbar {
+        position: fixed !important;
+        bottom: -100% !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+        margin-bottom: 0 !important;
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0 !important;
+        border: 1px solid var(--border-color) !important;
+        border-bottom: none !important;
+        z-index: 1500 !important;
         flex-direction: column !important;
         align-items: stretch !important;
-        gap: 0.75rem !important;
-        padding: 1rem !important;
+        gap: 1.25rem !important;
+        padding: 1.5rem !important;
+        background-color: var(--bg-card) !important;
+        box-shadow: 0 -10px 15px -3px rgba(0, 0, 0, 0.3) !important;
+        transition: bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        display: flex !important;
       }
-      .toolbar-search {
-        width: 100% !important;
-        max-width: none !important;
+      .dashboard-toolbar.active {
+        bottom: 0 !important;
       }
       .toolbar-left, .toolbar-right {
         width: 100% !important;
@@ -1287,21 +1454,35 @@
         </div>
       </div>
 
-      <!-- Toolbar Filter & Sort Controls -->
-      <div class="dashboard-toolbar" style="display: flex; gap: 1rem; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; background: var(--bg-card); padding: 0.75rem 1.25rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); transition: var(--transition-base);">
-        <!-- Real-time Search Feature -->
-        <div class="toolbar-search" style="position: relative; display: flex; align-items: center; flex-grow: 1; max-width: 300px; min-width: 200px;">
+      <!-- Search Bar Row (Always visible) -->
+      <div class="search-container" style="display: flex; gap: 0.75rem; margin-bottom: 1.5rem; width: 100%;">
+        <div class="toolbar-search" style="position: relative; display: flex; align-items: center; flex-grow: 1;">
           <span style="position: absolute; left: 0.75rem; color: var(--text-muted); display: flex; align-items: center; pointer-events: none;">
             <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </span>
-          <input type="text" id="searchInput" class="form-input" style="padding: 0.4rem 2rem 0.4rem 2.25rem; font-size: 0.85rem; height: 34px; border-radius: var(--radius-md);" placeholder="Search items...">
+          <input type="text" id="searchInput" class="form-input" style="padding: 0.4rem 2rem 0.4rem 2.25rem; font-size: 0.85rem; height: 38px; border-radius: var(--radius-md);" placeholder="Search items...">
           <button id="searchClearBtn" style="position: absolute; right: 0.5rem; background: none; border: none; color: var(--text-muted); cursor: pointer; display: none; align-items: center; justify-content: center; padding: 0.25rem;" aria-label="Clear search">
             <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
+        </div>
+        <button id="mobileFilterToggle" class="mobile-filter-btn" style="height: 38px; padding: 0 1rem;" title="Show Filters">
+          <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+          </svg>
+          <span style="font-size: 0.85rem; font-weight: 600;">Filters</span>
+        </button>
+      </div>
+
+      <!-- Toolbar Filter & Sort Controls -->
+      <div class="dashboard-toolbar" id="dashboardToolbar">
+        <!-- Bottom Sheet Header for Mobile -->
+        <div class="sheet-header" style="justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem; margin-bottom: 0.5rem; width: 100%;">
+          <span style="font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 1.1rem;">Filters & Actions / Filtros</span>
+          <button id="closeSheetBtn" style="background: none; border: none; color: var(--text-muted); font-size: 1.75rem; cursor: pointer; line-height: 1; padding: 0.25rem; display: flex; align-items: center; justify-content: center;">&times;</button>
         </div>
 
         <div class="toolbar-left" style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
@@ -1355,6 +1536,40 @@
     <button class="lightbox-close" id="lightboxClose" aria-label="Close image">&times;</button>
     <img class="lightbox-img" id="lightboxImg" src="" alt="Zoomed Inventory Preview">
   </div>
+
+  <!-- Mobile Sidebar Navigation Drawer & Overlay -->
+  <div id="drawerOverlay" class="drawer-overlay"></div>
+  <div id="sideDrawer" class="side-drawer">
+    <div class="drawer-header">
+      <span class="drawer-title">Menu / Menú</span>
+      <button id="closeDrawerBtn" class="close-drawer-btn" aria-label="Close menu">&times;</button>
+    </div>
+    <div class="drawer-content">
+      <div class="drawer-item" id="drawerPerformerSelectContainer" style="display: none;">
+        <label class="drawer-label" id="drawerPerformerLabel">Select Performer Profile</label>
+        <select id="drawerPerformerSelect" class="drawer-select" aria-label="Select Performer Profile">
+          <!-- Dynamically populated in JS -->
+        </select>
+      </div>
+      <div class="drawer-item" id="drawerViewSelectContainer" style="display: none;">
+        <label class="drawer-label" id="drawerViewLabel">Change Layout View</label>
+        <select id="drawerViewSelect" class="drawer-select" aria-label="Change Layout View">
+          <option value="layout-large">🖼️ Large Icons</option>
+          <option value="layout-medium">📱 Medium Icons</option>
+          <option value="layout-list">📝 List View</option>
+        </select>
+      </div>
+      <button id="drawerLogoutBtn" class="btn btn-secondary" style="width: 100%; margin-top: 1.5rem; justify-content: center;" title="Log Out" aria-label="Log Out">
+        <svg style="width:16px;height:16px; margin-right: 0.5rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+        </svg>
+        <span>Log Out</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Bottom Sheet Overlay backdrop -->
+  <div id="sheetOverlay" class="sheet-overlay"></div>
 
   <!-- Toast Notifications Container -->
   <div id="toastContainer" class="toast-container"></div>
@@ -1585,6 +1800,34 @@
         elements.logoutBtn.querySelector('span').textContent = dict.logout;
       }
 
+      // Drawer and bottom sheet translations
+      const sheetTitleEl = document.querySelector('.sheet-header span');
+      if (sheetTitleEl) sheetTitleEl.textContent = lang === 'es' ? "Filtros y Acciones" : "Filters & Actions";
+
+      const performerLabelEl = document.getElementById('drawerPerformerLabel');
+      if (performerLabelEl) performerLabelEl.textContent = lang === 'es' ? "Perfil de Bailarín" : "Select Performer Profile";
+
+      const viewLabelEl = document.getElementById('drawerViewLabel');
+      if (viewLabelEl) viewLabelEl.textContent = lang === 'es' ? "Vista de Diseño" : "Change Layout View";
+
+      if (elements.drawerLogoutBtn && elements.drawerLogoutBtn.querySelector('span')) {
+        elements.drawerLogoutBtn.querySelector('span').textContent = dict.logout;
+      }
+
+      if (elements.mobileFilterToggle && elements.mobileFilterToggle.querySelector('span')) {
+        elements.mobileFilterToggle.querySelector('span').textContent = lang === 'es' ? "Filtros" : "Filters";
+      }
+
+      if (elements.drawerViewSelect) {
+        const viewOpts = elements.drawerViewSelect.options;
+        for (let i = 0; i < viewOpts.length; i++) {
+          const opt = viewOpts[i];
+          if (opt.value === 'layout-large') opt.textContent = lang === 'es' ? '🖼️ Iconos Grandes' : '🖼️ Large Icons';
+          else if (opt.value === 'layout-medium') opt.textContent = lang === 'es' ? '📱 Iconos Medianos' : '📱 Medium Icons';
+          else if (opt.value === 'layout-list') opt.textContent = lang === 'es' ? '📝 Vista de Lista' : '📝 List View';
+        }
+      }
+
       // Sort options translation
       if (elements.sortSelect) {
         const sortOpts = elements.sortSelect.options;
@@ -1605,6 +1848,13 @@
       if (elements.performerSelect && elements.performerSelect.options.length > 0) {
         for (let i = 0; i < elements.performerSelect.options.length; i++) {
           const opt = elements.performerSelect.options[i];
+          if (opt.value === 'all') opt.textContent = dict.switcherAll;
+          else if (opt.value === 'unassigned') opt.textContent = dict.switcherUnassigned;
+        }
+      }
+      if (elements.drawerPerformerSelect && elements.drawerPerformerSelect.options.length > 0) {
+        for (let i = 0; i < elements.drawerPerformerSelect.options.length; i++) {
+          const opt = elements.drawerPerformerSelect.options[i];
           if (opt.value === 'all') opt.textContent = dict.switcherAll;
           else if (opt.value === 'unassigned') opt.textContent = dict.switcherUnassigned;
         }
@@ -1881,7 +2131,19 @@
       pinFormGroup: document.getElementById('pinFormGroup'),
       toggleLoginModeBtn: document.getElementById('toggleLoginModeBtn'),
       searchInput: document.getElementById('searchInput'),
-      searchClearBtn: document.getElementById('searchClearBtn')
+      searchClearBtn: document.getElementById('searchClearBtn'),
+      drawerOverlay: document.getElementById('drawerOverlay'),
+      sideDrawer: document.getElementById('sideDrawer'),
+      closeDrawerBtn: document.getElementById('closeDrawerBtn'),
+      drawerPerformerSelectContainer: document.getElementById('drawerPerformerSelectContainer'),
+      drawerPerformerSelect: document.getElementById('drawerPerformerSelect'),
+      drawerViewSelectContainer: document.getElementById('drawerViewSelectContainer'),
+      drawerViewSelect: document.getElementById('drawerViewSelect'),
+      drawerLogoutBtn: document.getElementById('drawerLogoutBtn'),
+      mobileFilterToggle: document.getElementById('mobileFilterToggle'),
+      dashboardToolbar: document.getElementById('dashboardToolbar'),
+      closeSheetBtn: document.getElementById('closeSheetBtn'),
+      sheetOverlay: document.getElementById('sheetOverlay')
     };
 
     // Initialize application
@@ -2178,6 +2440,12 @@
         elements.searchClearBtn.style.display = "none";
       }
       
+      // Clear active drawer classes & overlays
+      if (elements.sideDrawer) elements.sideDrawer.classList.remove('active');
+      if (elements.drawerOverlay) elements.drawerOverlay.classList.remove('active');
+      if (elements.dashboardToolbar) elements.dashboardToolbar.classList.remove('active');
+      if (elements.sheetOverlay) elements.sheetOverlay.classList.remove('active');
+      
       // Clear URL parameters
       if (window.history && window.history.replaceState) {
         const url = window.location.protocol + "//" + window.location.host + window.location.pathname;
@@ -2186,6 +2454,7 @@
       
       // Reset Select options
       elements.performerSelect.innerHTML = "";
+      if (elements.drawerPerformerSelect) elements.drawerPerformerSelect.innerHTML = "";
       
       const dict = i18n[state.language || 'en'];
       renderLogin();
@@ -2215,9 +2484,75 @@
           }
         });
       }
-      elements.viewSelect.addEventListener('change', changeView);
-      elements.performerSelect.addEventListener('change', changePerformerProfile);
+      elements.viewSelect.addEventListener('change', (e) => {
+        elements.drawerViewSelect.value = e.target.value;
+        changeView(e);
+      });
+      elements.drawerViewSelect.addEventListener('change', (e) => {
+        elements.viewSelect.value = e.target.value;
+        changeView(e);
+        elements.sideDrawer.classList.remove('active');
+        elements.drawerOverlay.classList.remove('active');
+      });
+
+      elements.performerSelect.addEventListener('change', (e) => {
+        elements.drawerPerformerSelect.value = e.target.value;
+        changePerformerProfile(e);
+      });
+      elements.drawerPerformerSelect.addEventListener('change', (e) => {
+        elements.performerSelect.value = e.target.value;
+        changePerformerProfile(e);
+        elements.sideDrawer.classList.remove('active');
+        elements.drawerOverlay.classList.remove('active');
+      });
+
       elements.logoutBtn.addEventListener('click', handleLogout);
+      elements.drawerLogoutBtn.addEventListener('click', () => {
+        handleLogout();
+        elements.sideDrawer.classList.remove('active');
+        elements.drawerOverlay.classList.remove('active');
+      });
+
+      // Side Drawer Navigation Events
+      const menuBtn = document.querySelector('.menu-btn');
+      if (menuBtn) {
+        menuBtn.addEventListener('click', () => {
+          elements.sideDrawer.classList.add('active');
+          elements.drawerOverlay.classList.add('active');
+        });
+      }
+      if (elements.closeDrawerBtn) {
+        elements.closeDrawerBtn.addEventListener('click', () => {
+          elements.sideDrawer.classList.remove('active');
+          elements.drawerOverlay.classList.remove('active');
+        });
+      }
+      if (elements.drawerOverlay) {
+        elements.drawerOverlay.addEventListener('click', () => {
+          elements.sideDrawer.classList.remove('active');
+          elements.drawerOverlay.classList.remove('active');
+        });
+      }
+
+      // Mobile Bottom Sheet Filters Drawer Events
+      if (elements.mobileFilterToggle) {
+        elements.mobileFilterToggle.addEventListener('click', () => {
+          elements.dashboardToolbar.classList.add('active');
+          elements.sheetOverlay.classList.add('active');
+        });
+      }
+      if (elements.closeSheetBtn) {
+        elements.closeSheetBtn.addEventListener('click', () => {
+          elements.dashboardToolbar.classList.remove('active');
+          elements.sheetOverlay.classList.remove('active');
+        });
+      }
+      if (elements.sheetOverlay) {
+        elements.sheetOverlay.addEventListener('click', () => {
+          elements.dashboardToolbar.classList.remove('active');
+          elements.sheetOverlay.classList.remove('active');
+        });
+      }
       
       if (elements.typeFilterSelect) {
         elements.typeFilterSelect.addEventListener('change', () => {
@@ -2471,23 +2806,29 @@
       elements.loginView.style.display = 'none';
       elements.dashboardView.style.display = 'block';
       elements.viewSelectContainer.style.display = 'block';
+      elements.drawerViewSelectContainer.style.display = 'block';
+      elements.drawerViewSelect.value = state.view;
 
       // Setup Administrator switcher
       if (state.isAdmin) {
         const dict = i18n[state.language || 'en'];
         elements.performerSelectContainer.style.display = 'block';
+        elements.drawerPerformerSelectContainer.style.display = 'block';
         if (elements.performerSelect.options.length === 0) {
           elements.performerSelect.innerHTML = "";
+          elements.drawerPerformerSelect.innerHTML = "";
           
           const allOpt = document.createElement('option');
           allOpt.value = "all";
           allOpt.textContent = dict.switcherAll;
           elements.performerSelect.appendChild(allOpt);
+          elements.drawerPerformerSelect.appendChild(allOpt.cloneNode(true));
           
           const unassignedOpt = document.createElement('option');
           unassignedOpt.value = "unassigned";
           unassignedOpt.textContent = dict.switcherUnassigned;
           elements.performerSelect.appendChild(unassignedOpt);
+          elements.drawerPerformerSelect.appendChild(unassignedOpt.cloneNode(true));
           
           (state.performers || []).forEach(perf => {
             if (perf && perf.email) {
@@ -2495,13 +2836,16 @@
               opt.value = perf.email;
               opt.textContent = `${perf.name || 'Unknown'} (${perf.email})`;
               elements.performerSelect.appendChild(opt);
+              elements.drawerPerformerSelect.appendChild(opt.cloneNode(true));
             }
           });
           
           elements.performerSelect.value = state.selectedPerformer;
+          elements.drawerPerformerSelect.value = state.selectedPerformer;
         }
       } else {
         elements.performerSelectContainer.style.display = 'none';
+        elements.drawerPerformerSelectContainer.style.display = 'none';
       }
 
       elements.logoutBtn.style.display = 'inline-flex';
