@@ -29,7 +29,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tradici&#xf3;n Inventory Tracker</title>
-  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="icon" type="image/png" href="favicon.png?v=1">
   <!-- Google Fonts: Outfit and Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1063,6 +1063,22 @@
     .item-grid.layout-list .item-image-box .id-tag,
     .item-grid.layout-list .item-image-box .cost-tag {
       display: none;
+    }
+
+    /* Dashboard Toolbar Filter & Action Bar Styles on Desktop */
+    .dashboard-toolbar {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      background: var(--bg-card);
+      padding: 0.75rem 1.25rem;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition-base);
     }
 
     /* Side Drawer Navigation & Overlays */
