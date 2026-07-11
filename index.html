@@ -1108,6 +1108,10 @@
         gap: 0.75rem !important;
         padding: 1rem !important;
       }
+      .toolbar-search {
+        width: 100% !important;
+        max-width: none !important;
+      }
       .toolbar-left, .toolbar-right {
         width: 100% !important;
         justify-content: space-between !important;
@@ -1285,6 +1289,21 @@
 
       <!-- Toolbar Filter & Sort Controls -->
       <div class="dashboard-toolbar" style="display: flex; gap: 1rem; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; background: var(--bg-card); padding: 0.75rem 1.25rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); transition: var(--transition-base);">
+        <!-- Real-time Search Feature -->
+        <div class="toolbar-search" style="position: relative; display: flex; align-items: center; flex-grow: 1; max-width: 300px; min-width: 200px;">
+          <span style="position: absolute; left: 0.75rem; color: var(--text-muted); display: flex; align-items: center; pointer-events: none;">
+            <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </span>
+          <input type="text" id="searchInput" class="form-input" style="padding: 0.4rem 2rem 0.4rem 2.25rem; font-size: 0.85rem; height: 34px; border-radius: var(--radius-md);" placeholder="Search items...">
+          <button id="searchClearBtn" style="position: absolute; right: 0.5rem; background: none; border: none; color: var(--text-muted); cursor: pointer; display: none; align-items: center; justify-content: center; padding: 0.25rem;" aria-label="Clear search">
+            <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
         <div class="toolbar-left" style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
           <span style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px;">Filter by Type:</span>
           <div class="view-select-container">
@@ -1591,6 +1610,13 @@
         }
       }
       
+      // Translate Search Input Placeholder
+      if (elements.searchInput) {
+        elements.searchInput.placeholder = lang === 'es' 
+          ? 'Buscar por ID, descripción, tipo, ubicación...' 
+          : 'Search by ID, description, type, location...';
+      }
+
       // Update header info dynamically
       if (elements.performerHeader && state.email) {
         const displayName = state.name ? state.name : (lang === 'es' ? "Portal de Bailarín" : "Performer Portal");
@@ -1853,7 +1879,9 @@
       emailListBtn: document.getElementById('emailListBtn'),
       performerPin: document.getElementById('performerPin'),
       pinFormGroup: document.getElementById('pinFormGroup'),
-      toggleLoginModeBtn: document.getElementById('toggleLoginModeBtn')
+      toggleLoginModeBtn: document.getElementById('toggleLoginModeBtn'),
+      searchInput: document.getElementById('searchInput'),
+      searchClearBtn: document.getElementById('searchClearBtn')
     };
 
     // Initialize application
@@ -2142,6 +2170,14 @@
       state.selectedPerformer = "all";
       state.statusFilter = "all";
       
+      // Clear search input if present
+      if (elements.searchInput) {
+        elements.searchInput.value = "";
+      }
+      if (elements.searchClearBtn) {
+        elements.searchClearBtn.style.display = "none";
+      }
+      
       // Clear URL parameters
       if (window.history && window.history.replaceState) {
         const url = window.location.protocol + "//" + window.location.host + window.location.pathname;
@@ -2192,6 +2228,26 @@
       if (elements.sortSelect) {
         elements.sortSelect.addEventListener('change', () => {
           renderInventoryCards();
+        });
+      }
+      
+      if (elements.searchInput) {
+        elements.searchInput.addEventListener('input', () => {
+          if (elements.searchClearBtn) {
+            elements.searchClearBtn.style.display = elements.searchInput.value ? 'flex' : 'none';
+          }
+          updateStats();
+          renderInventoryCards();
+        });
+      }
+      
+      if (elements.searchClearBtn) {
+        elements.searchClearBtn.addEventListener('click', () => {
+          elements.searchInput.value = '';
+          elements.searchClearBtn.style.display = 'none';
+          updateStats();
+          renderInventoryCards();
+          elements.searchInput.focus();
         });
       }
       
@@ -2504,6 +2560,25 @@
         itemsList = itemsList.filter(item => item && item.type === selectedType);
       }
 
+      // Filter by Search Query
+      const query = (elements.searchInput ? elements.searchInput.value : "").trim().toLowerCase();
+      if (query) {
+        itemsList = itemsList.filter(item => {
+          if (!item) return false;
+          const id = (item.id || '').toString().toLowerCase();
+          const description = (item.description || '').toLowerCase();
+          const type = (item.type || '').toLowerCase();
+          const location = (item.location || '').toLowerCase();
+          const assigned = (item.assigned || '').toLowerCase();
+          
+          return id.includes(query) || 
+                 description.includes(query) || 
+                 type.includes(query) || 
+                 location.includes(query) || 
+                 (state.isAdmin && assigned.includes(query));
+        });
+      }
+
       const total = itemsList.length;
       let confirmed = 0;
       
@@ -2544,6 +2619,25 @@
         itemsList = itemsList.filter(item => item && item.status && item.status.trim() !== "" && item.status.trim() !== "-");
       } else if (state.statusFilter === 'pending') {
         itemsList = itemsList.filter(item => !item || !item.status || item.status.trim() === "" || item.status.trim() === "-");
+      }
+
+      // Filter by Search Query
+      const query = (elements.searchInput ? elements.searchInput.value : "").trim().toLowerCase();
+      if (query) {
+        itemsList = itemsList.filter(item => {
+          if (!item) return false;
+          const id = (item.id || '').toString().toLowerCase();
+          const description = (item.description || '').toLowerCase();
+          const type = (item.type || '').toLowerCase();
+          const location = (item.location || '').toLowerCase();
+          const assigned = (item.assigned || '').toLowerCase();
+          
+          return id.includes(query) || 
+                 description.includes(query) || 
+                 type.includes(query) || 
+                 location.includes(query) || 
+                 (state.isAdmin && assigned.includes(query));
+        });
       }
       
       return itemsList;
