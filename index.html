@@ -2309,6 +2309,16 @@
     
     // Set brand logo src dynamically
     document.getElementById('brandLogoImg').src = LOGO_DATA;
+    
+    // Set favicon dynamically using the joined base64 data URI to bypass subdirectory caching bugs
+    let faviconLink = document.querySelector("link[rel~='icon']");
+    if (!faviconLink) {
+      faviconLink = document.createElement('link');
+      faviconLink.rel = 'icon';
+      document.getElementsByTagName('head')[0].appendChild(faviconLink);
+    }
+    faviconLink.type = 'image/png';
+    faviconLink.href = LOGO_DATA;
       initTheme();
       applyLanguage();
       initView();
