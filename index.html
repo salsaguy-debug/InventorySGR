@@ -1379,113 +1379,58 @@
       }
     }
 
-    /* Custom Modal Overlay */
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(3, 7, 18, 0.85);
-      z-index: 2100;
-      display: flex;
+    /* Capsule/Pill badges for inline form */
+    .form-pill-label {
+      display: inline-flex;
       align-items: center;
       justify-content: center;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.25s ease;
-      padding: 1rem;
-    }
-    .modal-overlay.active {
-      opacity: 1;
-      pointer-events: auto;
-    }
-    .modal-card {
-      background-color: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-lg);
-      width: 100%;
-      max-width: 600px;
-      box-shadow: var(--shadow-lg);
-      transform: scale(0.95);
-      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-      display: flex;
-      flex-direction: column;
-      max-height: 90vh;
-    }
-    .modal-overlay.active .modal-card {
-      transform: scale(1);
-    }
-    .modal-header {
-      padding: 1.25rem 1.5rem;
-      border-bottom: 1px solid var(--border-color);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .modal-header h3 {
-      font-size: 1.25rem;
-      color: var(--text-main);
-    }
-    .modal-close-btn {
-      background: none;
-      border: none;
-      color: var(--text-muted);
-      font-size: 1.75rem;
-      cursor: pointer;
-      line-height: 1;
-      padding: 0.25rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: var(--transition-base);
-    }
-    .modal-close-btn:hover {
-      color: var(--text-main);
-    }
-    .modal-body {
-      padding: 0;
-      overflow-y: auto;
-      flex-grow: 1;
-      display: flex;
-      flex-direction: column;
-    }
-    .modal-footer {
-      padding: 1rem 1.5rem;
-      border-top: 1px solid var(--border-color);
-      display: flex;
-      justify-content: flex-end;
-      gap: 0.75rem;
-      background-color: rgba(9, 13, 22, 0.2);
-    }
-    .feedback-banner {
-      background-color: rgba(245, 197, 66, 0.1);
-      color: var(--accent-gold);
-      border: 1px solid rgba(245, 197, 66, 0.2);
-    }
-
-    /* Tab Buttons styling */
-    .tab-btn {
-      flex: 1;
-      padding: 0.75rem;
-      border: none;
-      background: none;
-      color: var(--text-muted);
-      font-weight: 600;
-      cursor: pointer;
-      border-bottom: 2px solid transparent;
-      transition: var(--transition-base);
+      padding: 0.25rem 0.5rem;
+      border-radius: 9999px;
+      font-weight: 700;
+      font-size: 0.8rem;
+      min-width: 90px;
+      height: 26px;
       font-family: 'Outfit', sans-serif;
-      font-size: 0.9rem;
+      box-sizing: border-box;
+      text-align: center;
     }
-    .tab-btn.active {
+    .pill-desc {
+      border: 1.5px solid var(--text-main);
       color: var(--text-main);
-      border-bottom: 2px solid var(--accent-gold);
-      background-color: rgba(255, 255, 255, 0.02);
+      background-color: transparent;
     }
-    .tab-btn:hover:not(.active) {
-      color: var(--text-main);
-      background-color: rgba(255, 255, 255, 0.01);
+    .pill-id {
+      background-color: rgba(148, 163, 184, 0.15);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      color: var(--text-muted);
+    }
+    .pill-cost {
+      background-color: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: var(--warning-orange);
+    }
+    .pill-type {
+      background-color: rgba(59, 130, 246, 0.12);
+      border: 1px solid rgba(59, 130, 246, 0.25);
+      color: var(--info-blue);
+    }
+    .pill-assigned {
+      background-color: rgba(59, 130, 246, 0.15);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: var(--info-blue);
+    }
+    .pill-location {
+      background-color: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: var(--success-green);
+    }
+    .form-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      width: 100%;
+      max-width: 500px;
+      margin-bottom: 0.5rem;
     }
   </style>
 </head>
@@ -1699,120 +1644,96 @@
     <img class="lightbox-img" id="lightboxImg" src="" alt="Zoomed Inventory Preview">
   </div>
 
-  <!-- Upload Preview Modal -->
-  <div id="uploadPreviewModal" class="modal-overlay" style="display: none;">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h3 id="modalTitle">Add or Upload Inventory</h3>
-        <button id="closeUploadModalBtn" class="modal-close-btn">&times;</button>
-      </div>
-      
-      <!-- Tabs switcher -->
-      <div style="display: flex; border-bottom: 1px solid var(--border-color); background-color: var(--bg-input);">
-        <button id="tabManualBtn" class="tab-btn active">Manual Entry</button>
-        <button id="tabBulkBtn" class="tab-btn">Bulk CSV Upload</button>
-      </div>
+      <!-- Admin Upload & Add Item Panel -->
+      <div id="adminUploadPanel" style="display: none; padding: 2rem; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); margin-top: 1rem; box-shadow: var(--shadow-lg); width: 100%; box-sizing: border-box;">
+        <div style="display: flex; flex-direction: column; gap: 0.75rem; width: 100%;">
+          
+          <!-- Upload Pic row -->
+          <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
+            <button id="formUploadPicBtn" class="btn btn-gold" style="padding: 0.4rem 1rem; font-size: 0.85rem; height: 34px; font-weight: 700; border-radius: var(--radius-md);">
+              <svg style="width: 14px; height: 14px; stroke: currentColor; fill: none; margin-right: 0.25rem; vertical-align: middle; display: inline-block;" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+              </svg>
+              <span style="vertical-align: middle;">Upload Pic</span>
+            </button>
+            <input type="file" id="formInputPicture" accept="image/*" style="display: none;">
+            <div id="formPicturePreviewContainer" style="width: 36px; height: 36px; border-radius: var(--radius-sm); border: 1px dashed var(--border-color); display: flex; align-items: center; justify-content: center; overflow: hidden; background-color: var(--bg-input);">
+              <span style="font-size: 0.6rem; color: var(--text-muted);">No Pic</span>
+            </div>
+          </div>
 
-      <div class="modal-body">
-        <!-- Manual Entry Panel (Tab 1) -->
-        <div id="manualEntryPanel" style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; overflow-y: auto; flex-grow: 1; box-sizing: border-box; width: 100%;">
-          <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-            <div style="flex: 1; min-width: 200px;">
-              <label class="form-label" id="lblFormId" style="margin-bottom: 4px; display: block; font-size: 0.8rem; font-weight: 600;">Item ID (Optional)</label>
-              <input type="text" id="formInputId" class="form-input" placeholder="e.g. 15" style="height: 38px; border-radius: var(--radius-sm);">
-            </div>
-            <div style="flex: 1; min-width: 200px;">
-              <label class="form-label" id="lblFormType" style="margin-bottom: 4px; display: block; font-size: 0.8rem; font-weight: 600;">Type / Category</label>
-              <input type="text" id="formInputType" class="form-input" placeholder="e.g. Bomba, Props" list="typeDatalist" style="height: 38px; border-radius: var(--radius-sm);">
-              <datalist id="typeDatalist"></datalist>
-            </div>
+          <!-- Description row -->
+          <div class="form-row">
+            <span class="form-pill-label pill-desc" id="lblFormDesc">Description</span>
+            <input type="text" id="formInputDesc" class="form-input" placeholder="" style="flex-grow: 1; height: 34px; border-radius: var(--radius-sm);" required>
           </div>
-          <div>
-            <label class="form-label" id="lblFormDesc" style="margin-bottom: 4px; display: block; font-size: 0.8rem; font-weight: 600;">Item Description *</label>
-            <input type="text" id="formInputDesc" class="form-input" placeholder="Enter detailed costume/prop description..." required style="height: 38px; border-radius: var(--radius-sm);">
-          </div>
-          <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-            <div style="flex: 1; min-width: 200px;">
-              <label class="form-label" id="lblFormCost" style="margin-bottom: 4px; display: block; font-size: 0.8rem; font-weight: 600;">Replacement Cost ($)</label>
-              <input type="text" id="formInputCost" class="form-input" placeholder="e.g. 75" style="height: 38px; border-radius: var(--radius-sm);">
-            </div>
-            <div style="flex: 1; min-width: 200px;">
-              <label class="form-label" id="lblFormLocation" style="margin-bottom: 4px; display: block; font-size: 0.8rem; font-weight: 600;">Location</label>
-              <input type="text" id="formInputLocation" class="form-input" placeholder="e.g. Storage Box A" style="height: 38px; border-radius: var(--radius-sm);">
-            </div>
-          </div>
-          <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-            <div style="flex: 1; min-width: 200px;">
-              <label class="form-label" id="lblFormAssigned" style="margin-bottom: 4px; display: block; font-size: 0.8rem; font-weight: 600;">Assigned To (Performer Email)</label>
-              <input type="email" id="formInputAssigned" class="form-input" placeholder="e.g. performer@gmail.com" list="performerDatalist" style="height: 38px; border-radius: var(--radius-sm);">
-              <datalist id="performerDatalist"></datalist>
-            </div>
-            <div style="flex: 1; min-width: 200px;">
-              <label class="form-label" id="lblFormStatus" style="margin-bottom: 4px; display: block; font-size: 0.8rem; font-weight: 600;">Item Status</label>
-              <div class="view-select-container" style="width: 100%;">
-                <select id="formInputStatus" class="view-select" style="width: 100%; height: 38px; padding: 0 1rem; border-radius: var(--radius-sm);">
-                  <option value="-">— (Not Set)</option>
-                  <option value="Yes. I got it">Yes. I got it</option>
-                  <option value="I returned it">I returned it</option>
-                  <option value="I never received it.">I never received it.</option>
-                  <option value="I lost it and need to replace it">I lost it and need to replace it</option>
-                  <option value="I loaned it to another performer (See Notes)">I loaned it to another performer (See Notes)</option>
-                  <option value="I damaged it and need to replace it">I damaged it and need to replace it</option>
-                  <option value="I cannot read the label ID.">I cannot read the label ID.</option>
-                  <option value="Yes, I have the item with a different number. (See Performer Notes)">Yes, I have the item with a different number. (See Performer Notes)</option>
-                </select>
-              </div>
-            </div>
-          </div>
-          <div>
-            <label class="form-label" id="lblFormNotes" style="margin-bottom: 4px; display: block; font-size: 0.8rem; font-weight: 600;">Performer Notes</label>
-            <textarea id="formInputNotes" class="form-input" style="height: 60px; resize: none; padding: 0.5rem; border-radius: var(--radius-sm);" placeholder="Any observations, custom markings..."></textarea>
-          </div>
-          <div>
-            <label class="form-label" id="lblFormPicture" style="margin-bottom: 4px; display: block; font-size: 0.8rem; font-weight: 600;">Upload Picture</label>
-            <div style="display: flex; gap: 1rem; align-items: center;">
-              <input type="file" id="formInputPicture" accept="image/*" class="form-input" style="padding: 4px; font-size: 0.8rem; height: auto; flex-grow: 1; border-radius: var(--radius-sm);">
-              <div id="formPicturePreviewContainer" style="width: 44px; height: 44px; border-radius: var(--radius-sm); border: 1px dashed var(--border-color); display: flex; align-items: center; justify-content: center; overflow: hidden; background-color: var(--bg-input); flex-shrink: 0;">
-                <span style="font-size: 0.6rem; color: var(--text-muted);">No Pic</span>
-              </div>
-            </div>
-          </div>
-        </div>
 
-        <!-- Bulk CSV Upload Panel (Tab 2) -->
-        <div id="bulkUploadPanel" style="padding: 1.5rem; display: none; flex-direction: column; overflow-y: auto; flex-grow: 1; box-sizing: border-box; width: 100%;">
-          <p id="uploadDesc" style="margin-bottom: 1rem; font-size: 0.95rem; color: var(--text-muted);"></p>
-          <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1.25rem;">
-            <button id="selectCSVFileBtn" class="btn btn-secondary" style="height: 38px;">Select CSV File</button>
-            <span id="selectedCSVFileName" style="font-size: 0.85rem; color: var(--text-muted);">No file selected</span>
+          <!-- ID row -->
+          <div class="form-row">
+            <span class="form-pill-label pill-id" id="lblFormId">ID:</span>
+            <input type="text" id="formInputId" class="form-input" placeholder="" style="flex-grow: 1; height: 34px; border-radius: var(--radius-sm);">
           </div>
-          <div id="uploadSummaryBadge" class="feedback-banner" style="display: none; margin-bottom: 1.25rem; font-weight: 600; padding: 0.75rem; border-radius: var(--radius-md);"></div>
-          <div id="previewTableContainer" style="display: none; max-height: 200px; overflow-y: auto; margin-bottom: 1rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
-            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.8rem;">
-              <thead>
-                <tr style="background-color: var(--bg-input); border-bottom: 1px solid var(--border-color); position: sticky; top: 0;">
-                  <th style="padding: 8px 10px; color: var(--text-muted);">ID</th>
-                  <th style="padding: 8px 10px; color: var(--text-muted);">Description</th>
-                  <th style="padding: 8px 10px; color: var(--text-muted);">Assigned</th>
-                  <th style="padding: 8px 10px; color: var(--text-muted);">Location</th>
-                </tr>
-              </thead>
-              <tbody id="previewTableBody">
-                <!-- Preview rows dynamically inserted -->
-              </tbody>
-            </table>
+
+          <!-- Cost row -->
+          <div class="form-row">
+            <span class="form-pill-label pill-cost" id="lblFormCost">Cost:</span>
+            <input type="text" id="formInputCost" class="form-input" placeholder="" style="flex-grow: 1; height: 34px; border-radius: var(--radius-sm);">
           </div>
+
+          <!-- Type row -->
+          <div class="form-row">
+            <span class="form-pill-label pill-type" id="lblFormType">Type:</span>
+            <input type="text" id="formInputType" class="form-input" placeholder="" list="typeDatalist" style="flex-grow: 1; height: 34px; border-radius: var(--radius-sm);">
+            <datalist id="typeDatalist"></datalist>
+          </div>
+
+          <!-- Assigned row -->
+          <div class="form-row">
+            <span class="form-pill-label pill-assigned" id="lblFormAssigned">Assigned:</span>
+            <input type="email" id="formInputAssigned" class="form-input" placeholder="" list="performerDatalist" style="flex-grow: 1; height: 34px; border-radius: var(--radius-sm);">
+            <datalist id="performerDatalist"></datalist>
+          </div>
+
+          <!-- Location row -->
+          <div class="form-row">
+            <span class="form-pill-label pill-location" id="lblFormLocation">Location:</span>
+            <input type="text" id="formInputLocation" class="form-input" placeholder="" style="flex-grow: 1; height: 34px; border-radius: var(--radius-sm);">
+          </div>
+
+          <!-- Item Status dropdown -->
+          <div style="display: flex; flex-direction: column; gap: 0.25rem; width: 100%; max-width: 500px; margin-top: 0.5rem;">
+            <label id="lblFormStatus" style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px;">Item Status</label>
+            <div class="view-select-container" style="width: 100%;">
+              <select id="formInputStatus" class="view-select" style="width: 100%; height: 38px; padding-left: 0.75rem; border-radius: var(--radius-sm);">
+                <option value="-">— (Not Set)</option>
+                <option value="Yes. I got it">Yes. I got it</option>
+                <option value="I returned it">I returned it</option>
+                <option value="I never received it.">I never received it.</option>
+                <option value="I lost it and need to replace it">I lost it and need to replace it</option>
+                <option value="I loaned it to another performer (See Notes)">I loaned it to another performer (See Notes)</option>
+                <option value="I damaged it and need to replace it">I damaged it and need to replace it</option>
+                <option value="I cannot read the label ID.">I cannot read the label ID.</option>
+                <option value="Yes, I have the item with a different number. (See Performer Notes)">Yes, I have the item with a different number. (See Performer Notes)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Performer Notes textarea -->
+          <div style="display: flex; flex-direction: column; gap: 0.25rem; width: 100%; max-width: 500px; margin-top: 0.5rem;">
+            <label id="lblFormNotes" style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px;">Performer Notes</label>
+            <textarea id="formInputNotes" class="form-input" style="height: 70px; resize: none; padding: 0.5rem; border-radius: var(--radius-sm);" placeholder="Write observations or annotations here..."></textarea>
+          </div>
+
+          <!-- Form Buttons row -->
+          <div style="display: flex; gap: 1rem; width: 100%; max-width: 500px; margin-top: 1rem; justify-content: flex-end;">
+            <button id="formCancelBtn" class="btn btn-secondary" style="height: 38px; padding: 0 1.5rem;">Cancel</button>
+            <button id="formSaveBtn" class="btn btn-gold" style="height: 38px; padding: 0 1.5rem;">
+              <span>Save Item</span>
+            </button>
+          </div>
+
         </div>
       </div>
-      
-      <div class="modal-footer">
-        <button id="cancelUploadBtn" class="btn btn-secondary">Cancel</button>
-        <button id="confirmUploadBtn" class="btn btn-gold">
-          <span>Confirm & Import</span>
-        </button>
-      </div>
-    </div>
-  </div>
 
   <!-- Mobile Sidebar Navigation Drawer & Overlay -->
   <div id="drawerOverlay" class="drawer-overlay"></div>
@@ -2118,22 +2039,8 @@
       if (elements.uploadInventoryBtn && elements.uploadInventoryBtn.querySelector('span')) {
         elements.uploadInventoryBtn.querySelector('span').textContent = dict.uploadInventoryBtn;
       }
-      if (elements.modalTitle) {
-        elements.modalTitle.textContent = dict.confirmUploadTitle;
-      }
-      if (elements.cancelUploadBtn) {
-        elements.cancelUploadBtn.textContent = dict.cancelBtn;
-      }
-      if (elements.confirmUploadBtn && elements.confirmUploadBtn.querySelector('span')) {
-        elements.confirmUploadBtn.querySelector('span').textContent = activeTab === "manual" ? (dict.btnSaveItem || "Save Item") : dict.confirmBtn;
-      }
 
       // Translate manual entry form labels
-      const tabManualBtn = document.getElementById('tabManualBtn');
-      if (tabManualBtn) tabManualBtn.textContent = dict.tabManual;
-      const tabBulkBtn = document.getElementById('tabBulkBtn');
-      if (tabBulkBtn) tabBulkBtn.textContent = dict.tabBulk;
-      
       const lblFormId = document.getElementById('lblFormId');
       if (lblFormId) lblFormId.textContent = dict.formId;
       const lblFormDesc = document.getElementById('lblFormDesc');
@@ -2150,14 +2057,18 @@
       if (lblFormStatus) lblFormStatus.textContent = dict.formStatus;
       const lblFormNotes = document.getElementById('lblFormNotes');
       if (lblFormNotes) lblFormNotes.textContent = dict.formNotes;
-      const lblFormPicture = document.getElementById('lblFormPicture');
-      if (lblFormPicture) lblFormPicture.textContent = dict.formPicture;
       
-      const selectCSVFileBtn = document.getElementById('selectCSVFileBtn');
-      if (selectCSVFileBtn) selectCSVFileBtn.textContent = lang === 'es' ? "Seleccionar Archivo CSV" : "Select CSV File";
-      const selectedCSVFileName = document.getElementById('selectedCSVFileName');
-      if (selectedCSVFileName && (selectedCSVFileName.textContent === "No file selected" || selectedCSVFileName.textContent === "Ningún archivo seleccionado")) {
-        selectedCSVFileName.textContent = lang === 'es' ? "Ningún archivo seleccionado" : "No file selected";
+      const formUploadPicBtn = document.getElementById('formUploadPicBtn');
+      if (formUploadPicBtn && formUploadPicBtn.querySelector('span')) {
+        formUploadPicBtn.querySelector('span').textContent = lang === 'es' ? "Subir Imagen" : "Upload Pic";
+      }
+      const formSaveBtn = document.getElementById('formSaveBtn');
+      if (formSaveBtn && formSaveBtn.querySelector('span')) {
+        formSaveBtn.querySelector('span').textContent = dict.btnSaveItem;
+      }
+      const formCancelBtn = document.getElementById('formCancelBtn');
+      if (formCancelBtn) {
+        formCancelBtn.textContent = dict.cancelBtn;
       }
 
       const formInputStatus = document.getElementById('formInputStatus');
@@ -2564,15 +2475,7 @@
       closeSheetBtn: document.getElementById('closeSheetBtn'),
       sheetOverlay: document.getElementById('sheetOverlay'),
       uploadInventoryBtn: document.getElementById('uploadInventoryBtn'),
-      inventoryFileInput: document.getElementById('inventoryFileInput'),
-      uploadPreviewModal: document.getElementById('uploadPreviewModal'),
-      closeUploadModalBtn: document.getElementById('closeUploadModalBtn'),
-      cancelUploadBtn: document.getElementById('cancelUploadBtn'),
-      confirmUploadBtn: document.getElementById('confirmUploadBtn'),
-      modalTitle: document.getElementById('modalTitle'),
-      uploadDesc: document.getElementById('uploadDesc'),
-      uploadSummaryBadge: document.getElementById('uploadSummaryBadge'),
-      previewTableBody: document.getElementById('previewTableBody')
+      inventoryFileInput: document.getElementById('inventoryFileInput')
     };
 
     // Initialize application
@@ -3033,21 +2936,45 @@
       }
       if (elements.uploadInventoryBtn) {
         elements.uploadInventoryBtn.addEventListener('click', () => {
-          openUploadModal();
+          toggleUploadForm();
         });
       }
-      if (elements.inventoryFileInput) {
-        elements.inventoryFileInput.addEventListener('change', handleCSVFileUpload);
-      }
-      if (elements.closeUploadModalBtn) {
-        elements.closeUploadModalBtn.addEventListener('click', closeUploadModal);
-      }
-      if (elements.cancelUploadBtn) {
-        elements.cancelUploadBtn.addEventListener('click', closeUploadModal);
-      }
 
-      // Initialize upload form tabs
-      initUploadTabs();
+      // Initialize inline upload form picture and button triggers
+      const formUploadPicBtn = document.getElementById('formUploadPicBtn');
+      const formInputPicture = document.getElementById('formInputPicture');
+      const previewContainer = document.getElementById('formPicturePreviewContainer');
+      
+      if (formUploadPicBtn && formInputPicture) {
+        formUploadPicBtn.addEventListener('click', () => {
+          formInputPicture.click();
+        });
+        
+        formInputPicture.addEventListener('change', (evt) => {
+          const file = evt.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+              previewContainer.innerHTML = `<img src="${e.target.result}" style="width:100%; height:100%; object-fit:cover;">`;
+            };
+            reader.readAsDataURL(file);
+          } else {
+            previewContainer.innerHTML = `<span style="font-size: 0.6rem; color: var(--text-muted);">No Pic</span>`;
+          }
+        });
+      }
+      
+      const formCancelBtn = document.getElementById('formCancelBtn');
+      if (formCancelBtn) {
+        formCancelBtn.addEventListener('click', () => {
+          toggleUploadForm();
+        });
+      }
+      
+      const formSaveBtn = document.getElementById('formSaveBtn');
+      if (formSaveBtn) {
+        formSaveBtn.addEventListener('click', saveManualItem);
+      }
 
       // Click handlers for stats badges to filter by status
       const badgeTotal = document.querySelector('.stats-container .stat-badge:nth-child(1)');
@@ -3710,109 +3637,57 @@
       elements.confirmUploadBtn.onclick = commitInventoryUpload;
     }
 
-    function openUploadModal() {
-      const dict = i18n[state.language || 'en'];
-      activeTab = "manual";
+    function toggleUploadForm() {
+      const panel = document.getElementById('adminUploadPanel');
+      const itemsContainer = document.getElementById('itemsContainer');
+      const searchContainer = document.querySelector('.search-container');
+      const performerCard = document.querySelector('.performer-card');
+      const toolbarLeft = document.querySelector('.dashboard-toolbar .toolbar-left');
+      const toolbarRight = document.querySelector('.dashboard-toolbar .toolbar-right');
+      const uploadBtn = elements.uploadInventoryBtn;
       
-      const manualBtn = document.getElementById('tabManualBtn');
-      const bulkBtn = document.getElementById('tabBulkBtn');
-      const manualPanel = document.getElementById('manualEntryPanel');
-      const bulkPanel = document.getElementById('bulkUploadPanel');
+      const isVisible = panel.style.display === 'block';
       
-      if (manualBtn) manualBtn.classList.add('active');
-      if (bulkBtn) bulkBtn.classList.remove('active');
-      if (manualPanel) manualPanel.style.display = 'flex';
-      if (bulkPanel) bulkPanel.style.display = 'none';
-      
-      elements.confirmUploadBtn.querySelector('span').textContent = dict.btnSaveItem || "Save Item";
-      
-      // Clean bulk preview table & file name
-      elements.previewTableBody.innerHTML = "";
-      const selectedCSVFileName = document.getElementById('selectedCSVFileName');
-      if (selectedCSVFileName) selectedCSVFileName.textContent = state.language === 'es' ? "Ningún archivo seleccionado" : "No file selected";
-      const uploadSummaryBadge = document.getElementById('uploadSummaryBadge');
-      if (uploadSummaryBadge) {
-        uploadSummaryBadge.style.display = "none";
-        uploadSummaryBadge.className = "feedback-banner";
-      }
-      const previewTableContainer = document.getElementById('previewTableContainer');
-      if (previewTableContainer) previewTableContainer.style.display = "none";
-      
-      // Reset manual fields
-      document.getElementById('formInputId').value = "";
-      document.getElementById('formInputDesc').value = "";
-      document.getElementById('formInputCost').value = "";
-      document.getElementById('formInputType').value = "";
-      document.getElementById('formInputAssigned').value = "";
-      document.getElementById('formInputLocation').value = "";
-      document.getElementById('formInputStatus').value = "-";
-      document.getElementById('formInputNotes').value = "";
-      document.getElementById('formInputPicture').value = "";
-      document.getElementById('formPicturePreviewContainer').innerHTML = `<span style="font-size: 0.6rem; color: var(--text-muted);">No Pic</span>`;
-      
-      populateDatalists();
-      
-      elements.uploadPreviewModal.classList.add("active");
-      elements.confirmUploadBtn.onclick = function() {
-        if (activeTab === "manual") {
-          saveManualItem();
-        } else {
-          commitInventoryUpload();
-        }
-      };
-    }
-
-    function initUploadTabs() {
-      const manualBtn = document.getElementById('tabManualBtn');
-      const bulkBtn = document.getElementById('tabBulkBtn');
-      const manualPanel = document.getElementById('manualEntryPanel');
-      const bulkPanel = document.getElementById('bulkUploadPanel');
-      const confirmBtn = elements.confirmUploadBtn;
-      
-      if (manualBtn && bulkBtn) {
-        manualBtn.addEventListener('click', () => {
-          activeTab = "manual";
-          const dict = i18n[state.language || 'en'];
-          manualBtn.classList.add('active');
-          bulkBtn.classList.remove('active');
-          manualPanel.style.display = 'flex';
-          bulkPanel.style.display = 'none';
-          confirmBtn.querySelector('span').textContent = dict.btnSaveItem || "Save Item";
-        });
+      if (isVisible) {
+        // Go back to checklist
+        panel.style.display = 'none';
+        itemsContainer.style.display = 'grid';
+        if (searchContainer) searchContainer.style.display = 'flex';
+        if (performerCard) performerCard.style.display = 'flex';
+        if (toolbarLeft) toolbarLeft.style.display = 'flex';
+        if (toolbarRight) toolbarRight.style.display = 'flex';
         
-        bulkBtn.addEventListener('click', () => {
-          activeTab = "bulk";
-          const dict = i18n[state.language || 'en'];
-          bulkBtn.classList.add('active');
-          manualBtn.classList.remove('active');
-          bulkPanel.style.display = 'flex';
-          manualPanel.style.display = 'none';
-          confirmBtn.querySelector('span').textContent = dict.confirmBtn || "Confirm & Import";
-        });
-      }
-      
-      const selectCSVFileBtn = document.getElementById('selectCSVFileBtn');
-      if (selectCSVFileBtn) {
-        selectCSVFileBtn.addEventListener('click', () => {
-          elements.inventoryFileInput.click();
-        });
-      }
-      
-      const pictureInput = document.getElementById('formInputPicture');
-      const picturePreview = document.getElementById('formPicturePreviewContainer');
-      if (pictureInput && picturePreview) {
-        pictureInput.addEventListener('change', (evt) => {
-          const file = evt.target.files[0];
-          if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-              picturePreview.innerHTML = `<img src="${e.target.result}" style="width:100%; height:100%; object-fit:cover;">`;
-            };
-            reader.readAsDataURL(file);
-          } else {
-            picturePreview.innerHTML = `<span style="font-size: 0.6rem; color: var(--text-muted);">No Pic</span>`;
-          }
-        });
+        if (uploadBtn) {
+          uploadBtn.classList.remove('active');
+          uploadBtn.style.boxShadow = '';
+        }
+      } else {
+        // Show form
+        panel.style.display = 'block';
+        itemsContainer.style.display = 'none';
+        if (searchContainer) searchContainer.style.display = 'none';
+        if (performerCard) performerCard.style.display = 'none';
+        if (toolbarLeft) toolbarLeft.style.display = 'none';
+        if (toolbarRight) toolbarRight.style.display = 'none';
+        
+        if (uploadBtn) {
+          uploadBtn.classList.add('active');
+          uploadBtn.style.boxShadow = '0 0 12px var(--accent-gold)';
+        }
+        
+        // Reset inputs
+        document.getElementById('formInputId').value = "";
+        document.getElementById('formInputDesc').value = "";
+        document.getElementById('formInputCost').value = "";
+        document.getElementById('formInputType').value = "";
+        document.getElementById('formInputAssigned').value = "";
+        document.getElementById('formInputLocation').value = "";
+        document.getElementById('formInputStatus').value = "-";
+        document.getElementById('formInputNotes').value = "";
+        document.getElementById('formInputPicture').value = "";
+        document.getElementById('formPicturePreviewContainer').innerHTML = `<span style="font-size: 0.6rem; color: var(--text-muted);">No Pic</span>`;
+        
+        populateDatalists();
       }
     }
 
@@ -3860,24 +3735,25 @@
         notes: notes
       };
       
+      const saveBtn = document.getElementById('formSaveBtn');
+      const cancelBtn = document.getElementById('formCancelBtn');
+      
       const submitPayload = (itemObj) => {
-        elements.confirmUploadBtn.disabled = true;
-        elements.cancelUploadBtn.disabled = true;
-        elements.closeUploadModalBtn.disabled = true;
-        elements.confirmUploadBtn.innerHTML = `<span class="spinner" style="display:inline-block; vertical-align:middle; margin-right:5px;"></span> ${state.language === 'es' ? "Guardando..." : "Saving..."}`;
+        saveBtn.disabled = true;
+        cancelBtn.disabled = true;
+        saveBtn.innerHTML = `<span class="spinner" style="display:inline-block; vertical-align:middle; margin-right:5px;"></span> ${state.language === 'es' ? "Guardando..." : "Saving..."}`;
         
         callAPI('uploadInventory', {
           adminEmail: state.email,
           items: [itemObj]
         }, (res) => {
-          elements.confirmUploadBtn.disabled = false;
-          elements.cancelUploadBtn.disabled = false;
-          elements.closeUploadModalBtn.disabled = false;
-          elements.confirmUploadBtn.innerHTML = `<span>${dict.btnSaveItem}</span>`;
+          saveBtn.disabled = false;
+          cancelBtn.disabled = false;
+          saveBtn.innerHTML = `<span>${dict.btnSaveItem}</span>`;
           
           if (res.success) {
             showToast(dict.toastSaveSuccess, "success");
-            closeUploadModal();
+            toggleUploadForm();
             
             showToast(state.language === 'es' ? "Actualizando inventario..." : "Refreshing inventory...", "info");
             callAPI('getInitialData', { email: state.email }, (initRes) => {
@@ -3892,10 +3768,9 @@
             showToast(dict.toastSaveError + (res.error || ""), "error");
           }
         }, (err) => {
-          elements.confirmUploadBtn.disabled = false;
-          elements.cancelUploadBtn.disabled = false;
-          elements.closeUploadModalBtn.disabled = false;
-          elements.confirmUploadBtn.innerHTML = `<span>${dict.btnSaveItem}</span>`;
+          saveBtn.disabled = false;
+          cancelBtn.disabled = false;
+          saveBtn.innerHTML = `<span>${dict.btnSaveItem}</span>`;
           showToast(dict.toastSaveError + err.toString(), "error");
         });
       };
@@ -3915,69 +3790,6 @@
       } else {
         submitPayload(payloadItem);
       }
-    }
-
-    function closeUploadModal() {
-      elements.uploadPreviewModal.classList.remove("active");
-      elements.inventoryFileInput.value = "";
-      uploadItemsPayload = [];
-      
-      // Reset manual fields
-      document.getElementById('formInputId').value = "";
-      document.getElementById('formInputDesc').value = "";
-      document.getElementById('formInputCost').value = "";
-      document.getElementById('formInputType').value = "";
-      document.getElementById('formInputAssigned').value = "";
-      document.getElementById('formInputLocation').value = "";
-      document.getElementById('formInputStatus').value = "-";
-      document.getElementById('formInputNotes').value = "";
-      document.getElementById('formInputPicture').value = "";
-      document.getElementById('formPicturePreviewContainer').innerHTML = `<span style="font-size: 0.6rem; color: var(--text-muted);">No Pic</span>`;
-    }
-
-    function commitInventoryUpload() {
-      if (uploadItemsPayload.length === 0) return;
-      
-      const dict = i18n[state.language || 'en'];
-      
-      elements.confirmUploadBtn.disabled = true;
-      elements.cancelUploadBtn.disabled = true;
-      elements.closeUploadModalBtn.disabled = true;
-      elements.confirmUploadBtn.innerHTML = `<span class="spinner" style="display:inline-block; vertical-align:middle; margin-right:5px;"></span> ${state.language === 'es' ? "Importando..." : "Importing..."}`;
-      
-      callAPI('uploadInventory', {
-        adminEmail: state.email,
-        items: uploadItemsPayload
-      }, (res) => {
-        elements.confirmUploadBtn.disabled = false;
-        elements.cancelUploadBtn.disabled = false;
-        elements.closeUploadModalBtn.disabled = false;
-        elements.confirmUploadBtn.innerHTML = `<span>${dict.confirmBtn}</span>`;
-        
-        if (res.success) {
-          showToast(dict.toastUploadSuccess, "success");
-          closeUploadModal();
-          
-          showToast(state.language === 'es' ? "Actualizando inventario..." : "Refreshing inventory...", "info");
-          callAPI('getInitialData', { email: state.email }, (initRes) => {
-            state.items = initRes.items || [];
-            state.performers = initRes.performersList || [];
-            populateTypeFilter();
-            renderDashboard();
-          }, (err) => {
-            console.error("Error refreshing after upload: ", err);
-          });
-          
-        } else {
-          showToast(dict.toastUploadError + (res.error || ""), "error");
-        }
-      }, (err) => {
-        elements.confirmUploadBtn.disabled = false;
-        elements.cancelUploadBtn.disabled = false;
-        elements.closeUploadModalBtn.disabled = false;
-        elements.confirmUploadBtn.innerHTML = `<span>${dict.confirmBtn}</span>`;
-        showToast(dict.toastUploadError + err.toString(), "error");
-      });
     }
 
     function renderInventoryCards() {
