@@ -805,12 +805,8 @@ function savePictureToDrive(base64Data, fileName) {
  * Run this function once in the Google Apps Script editor to authorize Google Drive permissions!
  */
 function triggerAuthorizationPrompt() {
-  try {
-    DriveApp.getRootFolder();
-    Logger.log("Drive permissions successfully authorized!");
-  } catch (e) {
-    Logger.log("Authorization failed: " + e.toString());
-  }
+  DriveApp.getRootFolder();
+  Logger.log("Drive permissions successfully authorized!");
 }
 
 /**
