@@ -1429,8 +1429,25 @@
       align-items: center;
       gap: 0.75rem;
       width: 100%;
-      max-width: 500px;
-      margin-bottom: 0.5rem;
+      box-sizing: border-box;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem 1rem;
+      width: 100%;
+      max-width: 700px;
+    }
+    @media (max-width: 600px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+      .form-row {
+        grid-column: span 1 !important;
+      }
+      #adminUploadPanel [style*="grid-column: span 2"] {
+        grid-column: span 1 !important;
+      }
     }
   </style>
 </head>
@@ -1646,62 +1663,68 @@
 
       <!-- Admin Upload & Add Item Panel -->
       <div id="adminUploadPanel" style="display: none; padding: 2rem; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); margin-top: 1rem; box-shadow: var(--shadow-lg); width: 100%; box-sizing: border-box;">
-        <div style="display: flex; flex-direction: column; gap: 0.75rem; width: 100%;">
-          
-          <!-- Upload Pic row -->
-          <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
-            <button id="formUploadPicBtn" class="btn btn-gold" style="padding: 0.4rem 1rem; font-size: 0.85rem; height: 34px; font-weight: 700; border-radius: var(--radius-md);">
-              <svg style="width: 14px; height: 14px; stroke: currentColor; fill: none; margin-right: 0.25rem; vertical-align: middle; display: inline-block;" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
-              </svg>
-              <span style="vertical-align: middle;">Upload Pic</span>
-            </button>
-            <input type="file" id="formInputPicture" accept="image/*" style="display: none;">
-            <div id="formPicturePreviewContainer" style="width: 36px; height: 36px; border-radius: var(--radius-sm); border: 1px dashed var(--border-color); display: flex; align-items: center; justify-content: center; overflow: hidden; background-color: var(--bg-input);">
-              <span style="font-size: 0.6rem; color: var(--text-muted);">No Pic</span>
-            </div>
+        
+        <!-- Upload Pic trigger row -->
+        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; width: 100%;">
+          <button id="formUploadPicBtn" class="btn btn-gold" style="padding: 0.4rem 1rem; font-size: 0.85rem; height: 34px; font-weight: 700; border-radius: var(--radius-md);">
+            <svg style="width: 14px; height: 14px; stroke: currentColor; fill: none; margin-right: 0.25rem; vertical-align: middle; display: inline-block;" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+            </svg>
+            <span style="vertical-align: middle;">Upload Pic</span>
+          </button>
+          <input type="file" id="formInputPicture" accept="image/*" style="display: none;">
+          <div id="formPicturePreviewContainer" style="width: 44px; height: 44px; border-radius: var(--radius-sm); border: 1px dashed var(--border-color); display: flex; align-items: center; justify-content: center; overflow: hidden; background-color: var(--bg-input);">
+            <span style="font-size: 0.6rem; color: var(--text-muted);">No Pic</span>
           </div>
+        </div>
 
-          <!-- Description row -->
-          <div class="form-row">
+        <div class="form-grid">
+          <!-- Description row (Full Width) -->
+          <div class="form-row" style="grid-column: span 2; max-width: 100%;">
             <span class="form-pill-label pill-desc" id="lblFormDesc">Description</span>
-            <input type="text" id="formInputDesc" class="form-input" placeholder="" style="flex-grow: 1; height: 34px; border-radius: var(--radius-sm);" required>
+            <input type="text" id="formInputDesc" class="form-input" placeholder="Enter costume/prop description..." style="flex-grow: 1; height: 34px; border-radius: var(--radius-sm);" required>
           </div>
 
           <!-- ID row -->
           <div class="form-row">
             <span class="form-pill-label pill-id" id="lblFormId">ID:</span>
-            <input type="text" id="formInputId" class="form-input" placeholder="" style="flex-grow: 1; height: 34px; border-radius: var(--radius-sm);">
+            <input type="text" id="formInputId" class="form-input" placeholder="e.g. 15" style="flex-grow: 1; height: 34px; border-radius: var(--radius-sm);">
           </div>
 
           <!-- Cost row -->
           <div class="form-row">
             <span class="form-pill-label pill-cost" id="lblFormCost">Cost:</span>
-            <input type="text" id="formInputCost" class="form-input" placeholder="" style="flex-grow: 1; height: 34px; border-radius: var(--radius-sm);">
+            <input type="text" id="formInputCost" class="form-input" placeholder="e.g. 75" style="flex-grow: 1; height: 34px; border-radius: var(--radius-sm);">
           </div>
 
-          <!-- Type row -->
+          <!-- Type select dropdown -->
           <div class="form-row">
             <span class="form-pill-label pill-type" id="lblFormType">Type:</span>
-            <input type="text" id="formInputType" class="form-input" placeholder="" list="typeDatalist" style="flex-grow: 1; height: 34px; border-radius: var(--radius-sm);">
-            <datalist id="typeDatalist"></datalist>
+            <div class="view-select-container" style="flex-grow: 1;">
+              <select id="formInputType" class="view-select" style="width: 100%; height: 34px; padding: 0 0.5rem; border-radius: var(--radius-sm);">
+                <!-- Dynamically populated in JS -->
+              </select>
+            </div>
           </div>
 
-          <!-- Assigned row -->
+          <!-- Assigned select dropdown -->
           <div class="form-row">
             <span class="form-pill-label pill-assigned" id="lblFormAssigned">Assigned:</span>
-            <input type="email" id="formInputAssigned" class="form-input" placeholder="" list="performerDatalist" style="flex-grow: 1; height: 34px; border-radius: var(--radius-sm);">
-            <datalist id="performerDatalist"></datalist>
+            <div class="view-select-container" style="flex-grow: 1;">
+              <select id="formInputAssigned" class="view-select" style="width: 100%; height: 34px; padding: 0 0.5rem; border-radius: var(--radius-sm);">
+                <!-- Dynamically populated in JS -->
+              </select>
+            </div>
           </div>
 
           <!-- Location row -->
           <div class="form-row">
             <span class="form-pill-label pill-location" id="lblFormLocation">Location:</span>
-            <input type="text" id="formInputLocation" class="form-input" placeholder="" style="flex-grow: 1; height: 34px; border-radius: var(--radius-sm);">
+            <input type="text" id="formInputLocation" class="form-input" placeholder="e.g. Storage Box A" style="flex-grow: 1; height: 34px; border-radius: var(--radius-sm);">
           </div>
 
           <!-- Item Status dropdown -->
-          <div style="display: flex; flex-direction: column; gap: 0.25rem; width: 100%; max-width: 500px; margin-top: 0.5rem;">
+          <div style="display: flex; flex-direction: column; gap: 0.25rem;">
             <label id="lblFormStatus" style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px;">Item Status</label>
             <div class="view-select-container" style="width: 100%;">
               <select id="formInputStatus" class="view-select" style="width: 100%; height: 38px; padding-left: 0.75rem; border-radius: var(--radius-sm);">
@@ -1718,14 +1741,14 @@
             </div>
           </div>
 
-          <!-- Performer Notes textarea -->
-          <div style="display: flex; flex-direction: column; gap: 0.25rem; width: 100%; max-width: 500px; margin-top: 0.5rem;">
+          <!-- Performer Notes textarea (Full Width) -->
+          <div style="display: flex; flex-direction: column; gap: 0.25rem; grid-column: span 2;">
             <label id="lblFormNotes" style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px;">Performer Notes</label>
             <textarea id="formInputNotes" class="form-input" style="height: 70px; resize: none; padding: 0.5rem; border-radius: var(--radius-sm);" placeholder="Write observations or annotations here..."></textarea>
           </div>
 
-          <!-- Form Buttons row -->
-          <div style="display: flex; gap: 1rem; width: 100%; max-width: 500px; margin-top: 1rem; justify-content: flex-end;">
+          <!-- Form Buttons row (Full Width) -->
+          <div style="display: flex; gap: 1rem; grid-column: span 2; justify-content: flex-end; margin-top: 1rem; border-top: 1px solid var(--border-color); padding-top: 1rem; width: 100%;">
             <button id="formCancelBtn" class="btn btn-secondary" style="height: 38px; padding: 0 1.5rem;">Cancel</button>
             <button id="formSaveBtn" class="btn btn-gold" style="height: 38px; padding: 0 1.5rem;">
               <span>Save Item</span>
@@ -3675,33 +3698,42 @@
           uploadBtn.style.boxShadow = '0 0 12px var(--accent-gold)';
         }
         
+        populateFormDropdowns();
+        
         // Reset inputs
         document.getElementById('formInputId').value = "";
         document.getElementById('formInputDesc').value = "";
         document.getElementById('formInputCost').value = "";
-        document.getElementById('formInputType').value = "";
+        document.getElementById('formInputType').selectedIndex = 0;
         document.getElementById('formInputAssigned').value = "";
         document.getElementById('formInputLocation').value = "";
         document.getElementById('formInputStatus').value = "-";
         document.getElementById('formInputNotes').value = "";
         document.getElementById('formInputPicture').value = "";
         document.getElementById('formPicturePreviewContainer').innerHTML = `<span style="font-size: 0.6rem; color: var(--text-muted);">No Pic</span>`;
-        
-        populateDatalists();
       }
     }
 
-    function populateDatalists() {
-      const typeDatalist = document.getElementById('typeDatalist');
-      const performerDatalist = document.getElementById('performerDatalist');
+    function populateFormDropdowns() {
+      const typeSelect = document.getElementById('formInputType');
+      const performerSelect = document.getElementById('formInputAssigned');
       
-      if (typeDatalist) {
+      if (typeSelect) {
         const uniqueTypes = [...new Set(state.items.map(item => item.type).filter(Boolean))];
-        typeDatalist.innerHTML = uniqueTypes.map(t => `<option value="${t}">`).join('');
+        if (uniqueTypes.indexOf("General") === -1) {
+          uniqueTypes.push("General");
+        }
+        typeSelect.innerHTML = uniqueTypes.map(t => `<option value="${t}">${t}</option>`).join('');
       }
       
-      if (performerDatalist) {
-        performerDatalist.innerHTML = (state.performers || []).map(p => `<option value="${p.email}">`).join('');
+      if (performerSelect) {
+        let html = `<option value="">— (Unassigned)</option>`;
+        (state.performers || []).forEach(perf => {
+          if (perf && perf.email) {
+            html += `<option value="${perf.email.toLowerCase()}">${perf.name || 'Unknown'} (${perf.email})</option>`;
+          }
+        });
+        performerSelect.innerHTML = html;
       }
     }
 
