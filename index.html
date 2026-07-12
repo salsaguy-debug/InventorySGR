@@ -1378,6 +1378,89 @@
         padding: 1rem;
       }
     }
+
+    /* Custom Modal Overlay */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(3, 7, 18, 0.85);
+      z-index: 2100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+      padding: 1rem;
+    }
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .modal-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 600px;
+      box-shadow: var(--shadow-lg);
+      transform: scale(0.95);
+      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+      display: flex;
+      flex-direction: column;
+      max-height: 90vh;
+    }
+    .modal-overlay.active .modal-card {
+      transform: scale(1);
+    }
+    .modal-header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-header h3 {
+      font-size: 1.25rem;
+      color: var(--text-main);
+    }
+    .modal-close-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.75rem;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition-base);
+    }
+    .modal-close-btn:hover {
+      color: var(--text-main);
+    }
+    .modal-body {
+      padding: 1.5rem;
+      overflow-y: auto;
+      flex-grow: 1;
+    }
+    .modal-footer {
+      padding: 1rem 1.5rem;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.75rem;
+      background-color: rgba(9, 13, 22, 0.2);
+    }
+    .feedback-banner {
+      background-color: rgba(245, 197, 66, 0.1);
+      color: var(--accent-gold);
+      border: 1px solid rgba(245, 197, 66, 0.2);
+    }
   </style>
 </head>
 <body>
@@ -1552,6 +1635,13 @@
             </svg>
             <span>Email List</span>
           </button>
+          <button id="uploadInventoryBtn" class="btn btn-gold" style="display: none; padding: 0.4rem 0.8rem; font-size: 0.85rem; height: 34px;">
+            <svg style="width: 14px; height: 14px; stroke: currentColor; fill: none; margin-right: 0.25rem;" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+            </svg>
+            <span>Upload Inventory</span>
+          </button>
+          <input type="file" id="inventoryFileInput" accept=".csv" style="display: none;">
         </div>
         <div class="toolbar-right" style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
           <span style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px;">Sort:</span>
@@ -1581,6 +1671,41 @@
   <div id="lightboxModal" class="lightbox">
     <button class="lightbox-close" id="lightboxClose" aria-label="Close image">&times;</button>
     <img class="lightbox-img" id="lightboxImg" src="" alt="Zoomed Inventory Preview">
+  </div>
+
+  <!-- Upload Preview Modal -->
+  <div id="uploadPreviewModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modalTitle">Confirm Inventory Upload</h3>
+        <button id="closeUploadModalBtn" class="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p id="uploadDesc" style="margin-bottom: 1rem; font-size: 0.95rem; color: var(--text-muted);"></p>
+        <div id="uploadSummaryBadge" class="feedback-banner" style="margin-bottom: 1.25rem; font-weight: 600; padding: 0.75rem; border-radius: var(--radius-md);"></div>
+        <div id="previewTableContainer" style="max-height: 250px; overflow-y: auto; margin-bottom: 1rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.8rem;">
+            <thead>
+              <tr style="background-color: var(--bg-input); border-bottom: 1px solid var(--border-color); position: sticky; top: 0;">
+                <th style="padding: 8px 10px; color: var(--text-muted);">ID</th>
+                <th style="padding: 8px 10px; color: var(--text-muted);">Description</th>
+                <th style="padding: 8px 10px; color: var(--text-muted);">Assigned</th>
+                <th style="padding: 8px 10px; color: var(--text-muted);">Location</th>
+              </tr>
+            </thead>
+            <tbody id="previewTableBody">
+              <!-- Preview rows dynamically inserted -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="cancelUploadBtn" class="btn btn-secondary">Cancel</button>
+        <button id="confirmUploadBtn" class="btn btn-gold">
+          <span>Confirm & Import</span>
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- Mobile Sidebar Navigation Drawer & Overlay -->
@@ -1704,7 +1829,17 @@
         feedbackInvalidEmail: "Please enter a valid email address.",
         feedbackInvalidPin: "Please enter your authorization PIN.",
         feedbackServerFailed: "Server connection failed: ",
-        errorLoadingProfile: "Error Loading Profile"
+        errorLoadingProfile: "Error Loading Profile",
+        uploadInventoryBtn: "Upload Inventory",
+        confirmUploadTitle: "Confirm Inventory Upload",
+        confirmUploadDesc: "Please review the items found in your file. Clicking confirm will save these changes directly to the Google Sheet.",
+        uploadSummaryMsg: "We found {total} items: {added} new items to add, {updated} existing items to update.",
+        confirmBtn: "Confirm & Import",
+        cancelBtn: "Cancel",
+        toastUploadSuccess: "Inventory uploaded and updated successfully!",
+        toastUploadError: "Failed to upload inventory: ",
+        errorInvalidCSV: "Failed to parse CSV file. Make sure it's a valid CSV with correct headers.",
+        errorNoValidItems: "No valid inventory items were found in the uploaded file."
       },
       es: {
         loadingTitle: "Cargando Portal de Bailarines...",
@@ -1769,7 +1904,17 @@
         feedbackInvalidEmail: "Por favor, ingrese un correo electrónico válido.",
         feedbackInvalidPin: "Por favor ingrese su PIN de autorización.",
         feedbackServerFailed: "Error de conexión con el servidor: ",
-        errorLoadingProfile: "Error al cargar el perfil"
+        errorLoadingProfile: "Error al cargar el perfil",
+        uploadInventoryBtn: "Cargar Inventario",
+        confirmUploadTitle: "Confirmar Carga de Inventario",
+        confirmUploadDesc: "Revise los artículos encontrados en su archivo. Confirmar guardará estos cambios directamente en la hoja de cálculo de Google.",
+        uploadSummaryMsg: "Se encontraron {total} artículos: {added} artículos nuevos para agregar, {updated} existentes para actualizar.",
+        confirmBtn: "Confirmar e Importar",
+        cancelBtn: "Cancelar",
+        toastUploadSuccess: "¡Inventario cargado y actualizado con éxito!",
+        toastUploadError: "Error al cargar el inventario: ",
+        errorInvalidCSV: "Error al analizar el archivo CSV. Asegúrese de que sea un CSV válido con los encabezados correctos.",
+        errorNoValidItems: "No se encontraron artículos de inventario válidos en el archivo cargado."
       }
     };
 
@@ -1835,6 +1980,18 @@
       }
       if (elements.emailListBtn) {
         elements.emailListBtn.querySelector('span').textContent = lang === 'es' ? "Enviar Lista" : "Email List";
+      }
+      if (elements.uploadInventoryBtn && elements.uploadInventoryBtn.querySelector('span')) {
+        elements.uploadInventoryBtn.querySelector('span').textContent = dict.uploadInventoryBtn;
+      }
+      if (elements.modalTitle) {
+        elements.modalTitle.textContent = dict.confirmUploadTitle;
+      }
+      if (elements.cancelUploadBtn) {
+        elements.cancelUploadBtn.textContent = dict.cancelBtn;
+      }
+      if (elements.confirmUploadBtn && elements.confirmUploadBtn.querySelector('span')) {
+        elements.confirmUploadBtn.querySelector('span').textContent = dict.confirmBtn;
       }
 
       const labelFilter = document.querySelector('.dashboard-toolbar .toolbar-left span');
@@ -2066,6 +2223,39 @@
               ]);
             }
           }, 800);
+        } else if (action === "uploadInventory") {
+          setTimeout(() => {
+            const uploadedItems = payload.items;
+            let addedCount = 0;
+            let updatedCount = 0;
+            
+            uploadedItems.forEach(upItem => {
+              const existingIdx = state.items.findIndex(item => item.id && item.id.toString() === upItem.id.toString());
+              if (existingIdx !== -1) {
+                state.items[existingIdx] = {
+                  ...state.items[existingIdx],
+                  ...upItem,
+                  rowIndex: state.items[existingIdx].rowIndex
+                };
+                updatedCount++;
+              } else {
+                const newRowIndex = state.items.length + 2;
+                state.items.push({
+                  ...upItem,
+                  rowIndex: newRowIndex,
+                  id: upItem.id || (state.items.length + 1).toString(),
+                  status: upItem.status || "-",
+                  notes: upItem.notes || ""
+                });
+                addedCount++;
+              }
+            });
+            successCallback({
+              success: true,
+              added: addedCount,
+              updated: updatedCount
+            });
+          }, 1200);
         } else {
           setTimeout(() => {
             successCallback({ success: true });
@@ -2116,6 +2306,8 @@
     const PERFORMER_NAME = "";
     const ERROR_MSG = "";
     const WEB_APP_URL = API_URL;
+
+    let uploadItemsPayload = [];
 
     // App state
     let state = {
@@ -2189,7 +2381,17 @@
       mobileFilterToggle: document.getElementById('mobileFilterToggle'),
       dashboardToolbar: document.getElementById('dashboardToolbar'),
       closeSheetBtn: document.getElementById('closeSheetBtn'),
-      sheetOverlay: document.getElementById('sheetOverlay')
+      sheetOverlay: document.getElementById('sheetOverlay'),
+      uploadInventoryBtn: document.getElementById('uploadInventoryBtn'),
+      inventoryFileInput: document.getElementById('inventoryFileInput'),
+      uploadPreviewModal: document.getElementById('uploadPreviewModal'),
+      closeUploadModalBtn: document.getElementById('closeUploadModalBtn'),
+      cancelUploadBtn: document.getElementById('cancelUploadBtn'),
+      confirmUploadBtn: document.getElementById('confirmUploadBtn'),
+      modalTitle: document.getElementById('modalTitle'),
+      uploadDesc: document.getElementById('uploadDesc'),
+      uploadSummaryBadge: document.getElementById('uploadSummaryBadge'),
+      previewTableBody: document.getElementById('previewTableBody')
     };
 
     // Initialize application
@@ -2648,6 +2850,20 @@
       if (elements.emailListBtn) {
         elements.emailListBtn.addEventListener('click', emailFilteredList);
       }
+      if (elements.uploadInventoryBtn) {
+        elements.uploadInventoryBtn.addEventListener('click', () => {
+          elements.inventoryFileInput.click();
+        });
+      }
+      if (elements.inventoryFileInput) {
+        elements.inventoryFileInput.addEventListener('change', handleCSVFileUpload);
+      }
+      if (elements.closeUploadModalBtn) {
+        elements.closeUploadModalBtn.addEventListener('click', closeUploadModal);
+      }
+      if (elements.cancelUploadBtn) {
+        elements.cancelUploadBtn.addEventListener('click', closeUploadModal);
+      }
 
       // Click handlers for stats badges to filter by status
       const badgeTotal = document.querySelector('.stats-container .stat-badge:nth-child(1)');
@@ -2870,6 +3086,7 @@
         const dict = i18n[state.language || 'en'];
         elements.performerSelectContainer.style.display = 'block';
         elements.drawerPerformerSelectContainer.style.display = 'block';
+        if (elements.uploadInventoryBtn) elements.uploadInventoryBtn.style.display = 'inline-flex';
         if (elements.performerSelect.options.length === 0) {
           elements.performerSelect.innerHTML = "";
           elements.drawerPerformerSelect.innerHTML = "";
@@ -2902,6 +3119,7 @@
       } else {
         elements.performerSelectContainer.style.display = 'none';
         elements.drawerPerformerSelectContainer.style.display = 'none';
+        if (elements.uploadInventoryBtn) elements.uploadInventoryBtn.style.display = 'none';
       }
 
       elements.logoutBtn.style.display = 'inline-flex';
@@ -3147,6 +3365,215 @@
         }
       }, (err) => {
         showToast((state.language === 'es' ? "Error de red: " : "Network error: ") + err.toString(), "error");
+      });
+    }
+
+    function parseCSV(text) {
+      const lines = [];
+      let row = [""];
+      let inQuotes = false;
+      for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+        const nextChar = text[i+1];
+        if (char === '"') {
+          if (inQuotes && nextChar === '"') {
+            row[row.length - 1] += '"';
+            i++;
+          } else {
+            inQuotes = !inQuotes;
+          }
+        } else if (char === ',' && !inQuotes) {
+          row.push("");
+        } else if ((char === '\r' || char === '\n') && !inQuotes) {
+          if (char === '\r' && nextChar === '\n') {
+            i++;
+          }
+          lines.push(row);
+          row = [""];
+        } else {
+          row[row.length - 1] += char;
+        }
+      }
+      if (row.length > 1 || row[0] !== "") {
+        lines.push(row);
+      }
+      return lines;
+    }
+
+    function handleCSVFileUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      const dict = i18n[state.language || 'en'];
+      
+      reader.onload = function(evt) {
+        try {
+          const contents = evt.target.result;
+          const rows = parseCSV(contents);
+          if (rows.length < 2) {
+            showToast(dict.errorInvalidCSV || "Invalid CSV layout", "error");
+            elements.inventoryFileInput.value = "";
+            return;
+          }
+          
+          // Identify headers
+          const csvHeaders = rows[0].map(h => h.toString().toLowerCase().trim());
+          
+          // Column index mapping
+          const idIdx = csvHeaders.indexOf("id") !== -1 ? csvHeaders.indexOf("id") : csvHeaders.indexOf("item id");
+          const descIdx = csvHeaders.findIndex(h => h.includes("desc"));
+          const assignedIdx = csvHeaders.findIndex(h => h.includes("assign") || h.includes("performer"));
+          const picIdx = csvHeaders.findIndex(h => h.includes("pic") || h.includes("image") || h.includes("picture"));
+          const costIdx = csvHeaders.findIndex(h => h.includes("cost") || h.includes("price") || h.includes("valor"));
+          const statusIdx = csvHeaders.indexOf("status") !== -1 ? csvHeaders.indexOf("status") : csvHeaders.indexOf("state");
+          const typeIdx = csvHeaders.findIndex(h => h.includes("type") || h.includes("types") || h.includes("category") || h.includes("categoría"));
+          const locationIdx = csvHeaders.findIndex(h => h.includes("loc") || h.includes("ubic"));
+          
+          if (descIdx === -1) {
+            showToast(dict.errorInvalidCSV || "Description column required", "error");
+            elements.inventoryFileInput.value = "";
+            return;
+          }
+          
+          const parsedItems = [];
+          for (let i = 1; i < rows.length; i++) {
+            const row = rows[i];
+            if (row.length === 0 || (row.length === 1 && !row[0])) continue;
+            
+            const itemObj = {};
+            if (idIdx !== -1 && row[idIdx]) itemObj.id = row[idIdx].trim();
+            if (descIdx !== -1 && row[descIdx]) itemObj.description = row[descIdx].trim();
+            if (assignedIdx !== -1 && row[assignedIdx]) itemObj.assigned = row[assignedIdx].trim().toLowerCase();
+            if (picIdx !== -1 && row[picIdx]) itemObj.picUrl = row[picIdx].trim();
+            if (costIdx !== -1 && row[costIdx]) itemObj.cost = row[costIdx].trim();
+            if (statusIdx !== -1 && row[statusIdx]) itemObj.status = row[statusIdx].trim();
+            if (typeIdx !== -1 && row[typeIdx]) itemObj.type = row[typeIdx].trim();
+            if (locationIdx !== -1 && row[locationIdx]) itemObj.location = row[locationIdx].trim();
+            
+            if (itemObj.description) {
+              parsedItems.push(itemObj);
+            }
+          }
+          
+          if (parsedItems.length === 0) {
+            showToast(dict.errorNoValidItems || "No valid items found", "error");
+            elements.inventoryFileInput.value = "";
+            return;
+          }
+          
+          uploadItemsPayload = parsedItems;
+          showUploadPreview(parsedItems);
+        } catch (error) {
+          console.error(error);
+          showToast((dict.errorInvalidCSV || "Error reading file: ") + error.toString(), "error");
+          elements.inventoryFileInput.value = "";
+        }
+      };
+      
+      reader.readAsText(file, "UTF-8");
+    }
+
+    function showUploadPreview(parsedItems) {
+      const dict = i18n[state.language || 'en'];
+      
+      let added = 0;
+      let updated = 0;
+      
+      parsedItems.forEach(upItem => {
+        const match = state.items.some(item => item.id && upItem.id && item.id.toString() === upItem.id.toString());
+        if (match) updated++;
+        else added++;
+      });
+      
+      elements.uploadDesc.textContent = dict.confirmUploadDesc;
+      
+      let summaryText = dict.uploadSummaryMsg
+        .replace("{total}", parsedItems.length)
+        .replace("{added}", added)
+        .replace("{updated}", updated);
+      
+      elements.uploadSummaryBadge.textContent = summaryText;
+      
+      elements.previewTableBody.innerHTML = "";
+      const previewCount = Math.min(10, parsedItems.length);
+      
+      for (let i = 0; i < previewCount; i++) {
+        const item = parsedItems[i];
+        const tr = document.createElement("tr");
+        tr.style.borderBottom = "1px solid var(--border-color)";
+        tr.innerHTML = `
+          <td style="padding: 8px 10px; font-weight: bold;">${item.id || 'N/A'}</td>
+          <td style="padding: 8px 10px; max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${item.description || ''}</td>
+          <td style="padding: 8px 10px;">${item.assigned || 'Unassigned'}</td>
+          <td style="padding: 8px 10px;">${item.location || 'N/A'}</td>
+        `;
+        elements.previewTableBody.appendChild(tr);
+      }
+      
+      if (parsedItems.length > 10) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td colspan="4" style="padding: 8px 10px; text-align: center; color: var(--text-muted); font-style: italic;">
+            + ${parsedItems.length - 10} more items / más artículos...
+          </td>
+        `;
+        elements.previewTableBody.appendChild(tr);
+      }
+      
+      elements.uploadPreviewModal.classList.add("active");
+      
+      elements.confirmUploadBtn.onclick = commitInventoryUpload;
+    }
+
+    function closeUploadModal() {
+      elements.uploadPreviewModal.classList.remove("active");
+      elements.inventoryFileInput.value = "";
+      uploadItemsPayload = [];
+    }
+
+    function commitInventoryUpload() {
+      if (uploadItemsPayload.length === 0) return;
+      
+      const dict = i18n[state.language || 'en'];
+      
+      elements.confirmUploadBtn.disabled = true;
+      elements.cancelUploadBtn.disabled = true;
+      elements.closeUploadModalBtn.disabled = true;
+      elements.confirmUploadBtn.innerHTML = `<span class="spinner" style="display:inline-block; vertical-align:middle; margin-right:5px;"></span> ${state.language === 'es' ? "Importando..." : "Importing..."}`;
+      
+      callAPI('uploadInventory', {
+        adminEmail: state.email,
+        items: uploadItemsPayload
+      }, (res) => {
+        elements.confirmUploadBtn.disabled = false;
+        elements.cancelUploadBtn.disabled = false;
+        elements.closeUploadModalBtn.disabled = false;
+        elements.confirmUploadBtn.innerHTML = `<span>${dict.confirmBtn}</span>`;
+        
+        if (res.success) {
+          showToast(dict.toastUploadSuccess, "success");
+          closeUploadModal();
+          
+          showToast(state.language === 'es' ? "Actualizando inventario..." : "Refreshing inventory...", "info");
+          callAPI('getInitialData', { email: state.email }, (initRes) => {
+            state.items = initRes.items || [];
+            state.performers = initRes.performersList || [];
+            populateTypeFilter();
+            renderDashboard();
+          }, (err) => {
+            console.error("Error refreshing after upload: ", err);
+          });
+          
+        } else {
+          showToast(dict.toastUploadError + (res.error || ""), "error");
+        }
+      }, (err) => {
+        elements.confirmUploadBtn.disabled = false;
+        elements.cancelUploadBtn.disabled = false;
+        elements.closeUploadModalBtn.disabled = false;
+        elements.confirmUploadBtn.innerHTML = `<span>${dict.confirmBtn}</span>`;
+        showToast(dict.toastUploadError + err.toString(), "error");
       });
     }
 

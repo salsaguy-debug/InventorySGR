@@ -30,12 +30,42 @@ const MASTER_SOURCE_SPREADSHEET_ID = "1u-kw9x5WJPO5NgvkH0-B8bNPWPLvVF28myNvbkc9p
 // Authorized Administrator Emails (Director and Subdirector)
 const ADMIN_EMAILS = ["rodriguez2113@gmail.com", "darienl140@gmail.com"];
 
-/**
- * Checks if a given email belongs to an administrator.
- */
 function isAdmin(email) {
   if (!email) return false;
-  return ADMIN_EMAILS.indexOf(email.trim().toLowerCase()) !== -1;
+  const cleanEmail = email.trim().toLowerCase();
+  if (ADMIN_EMAILS.indexOf(cleanEmail) !== -1) {
+    return true;
+  }
+  
+  // Dynamic fallback check in the Profiles sheet
+  try {
+    const ss = getMasterSourceSpreadsheet();
+    const profilesSheet = ss.getSheetByName("Profiles") || ss.getSheetByName("Profile") || ss.getSheetByName("Sheet1") || ss.getSheetByName("Crosswalk");
+    if (profilesSheet) {
+      const values = profilesSheet.getDataRange().getValues();
+      if (values.length > 1) {
+        const headers = values[0].map(h => h.toString().toLowerCase().trim());
+        const emailCol = headers.findIndex(h => h.includes("email") || h.includes("correo"));
+        const pinCol = headers.findIndex(h => h.includes("pin") || h.includes("code") || h.includes("código"));
+        if (emailCol !== -1 && pinCol !== -1) {
+          for (let i = 1; i < values.length; i++) {
+            const rowEmail = values[i][emailCol].toString().trim().toLowerCase();
+            if (rowEmail === cleanEmail) {
+              const pin = values[i][pinCol].toString().trim();
+              if (pin && pin.charAt(0) === '3') {
+                return true;
+              }
+              break;
+            }
+          }
+        }
+      }
+    }
+  } catch (err) {
+    Logger.log("Failed dynamic isAdmin check: " + err.toString());
+  }
+  
+  return false;
 }
 
 /**
@@ -136,6 +166,11 @@ function doPost(e) {
     if (postData.action === "sendEmails") {
       const summary = sendPerformerInventoryEmails();
       return ContentService.createTextOutput(JSON.stringify({ success: true, summary: summary }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    if (postData.action === "uploadInventory") {
+      const result = uploadInventory(postData.adminEmail, postData.items);
+      return ContentService.createTextOutput(JSON.stringify(result))
         .setMimeType(ContentService.MimeType.JSON);
     }
     if (postData.action === "requestAccessLink") {
@@ -577,7 +612,7 @@ function updateItemStatusAndNotes(rowIndex, expectedId, newStatus, performerNote
     
     // Write values to target row
     sheet.getRange(targetRow, statusCol + 1).setValue(newStatus);
-    sheet.getRange(targetRow, notesCol + 1).setValue(performerNotes);
+    sheet.getRange(targetRow, performerNotesCol + 1).setValue(performerNotes);
     
     return {
       success: true,
@@ -585,6 +620,134 @@ function updateItemStatusAndNotes(rowIndex, expectedId, newStatus, performerNote
     };
   } catch (error) {
     Logger.log("Error in updateItemStatusAndNotes: " + error.toString());
+    return {
+      success: false,
+      error: error.message || error.toString()
+    };
+  }
+}
+
+/**
+ * Processes inventory updates/additions uploaded by an admin.
+ */
+function uploadInventory(adminEmail, items) {
+  try {
+    if (!isAdmin(adminEmail)) {
+      throw new Error("Unauthorized access. Admin privileges required.");
+    }
+    
+    if (!items || !Array.isArray(items)) {
+      throw new Error("Invalid inventory payload.");
+    }
+    
+    const ss = getInventorySpreadsheet();
+    const sheet = ss.getSheetByName("Inventory") || ss.getSheets()[0];
+    if (!sheet) {
+      throw new Error("Inventory database sheet not found.");
+    }
+    
+    // Resolve headers
+    const headers = sheet.getRange(1, 1, 1, Math.max(sheet.getLastColumn(), 1)).getValues()[0];
+    const lowerHeaders = headers.map(h => h.toString().toLowerCase().trim());
+    
+    const idCol = lowerHeaders.indexOf("id");
+    const descCol = lowerHeaders.indexOf("item description");
+    const assignedCol = lowerHeaders.indexOf("assigned");
+    const picsCol = lowerHeaders.indexOf("pics") !== -1 ? lowerHeaders.indexOf("pics") : lowerHeaders.indexOf("pic");
+    const costCol = lowerHeaders.indexOf("replacement cost");
+    const statusCol = lowerHeaders.indexOf("status");
+    let typeCol = lowerHeaders.indexOf("type");
+    if (typeCol === -1) {
+      typeCol = lowerHeaders.indexOf("types");
+    }
+    const locationCol = lowerHeaders.indexOf("inventory location") !== -1
+      ? lowerHeaders.indexOf("inventory location")
+      : lowerHeaders.indexOf("location");
+    
+    // Auto-create Performer notes if not existing
+    const performerNotesCol = getOrCreatePerformerNotesColumn(sheet, lowerHeaders);
+    
+    // Load existing items to match by ID
+    const values = sheet.getDataRange().getValues();
+    const idRowMap = {};
+    let maxId = 0;
+    
+    for (let i = 1; i < values.length; i++) {
+      if (idCol !== -1 && values[i].length > idCol) {
+        const rowId = values[i][idCol].toString().trim();
+        if (rowId) {
+          idRowMap[rowId] = i + 1; // 1-based row number
+          const numId = parseInt(rowId, 10);
+          if (!isNaN(numId) && numId > maxId) {
+            maxId = numId;
+          }
+        }
+      }
+    }
+    
+    let addedCount = 0;
+    let updatedCount = 0;
+    
+    for (let j = 0; j < items.length; j++) {
+      const item = items[j];
+      let targetRow = -1;
+      let itemId = item.id ? item.id.toString().trim() : "";
+      
+      // Determine if this is an update or add
+      if (itemId && idRowMap[itemId] !== undefined) {
+        targetRow = idRowMap[itemId];
+        updatedCount++;
+      } else {
+        // Add new row
+        targetRow = sheet.getLastRow() + 1;
+        addedCount++;
+        
+        // If ID is missing, auto-generate one
+        if (!itemId) {
+          maxId++;
+          itemId = maxId.toString();
+        }
+        
+        // Write ID first (if ID column exists)
+        if (idCol !== -1) {
+          sheet.getRange(targetRow, idCol + 1).setValue(itemId);
+        }
+      }
+      
+      // Write provided fields
+      if (item.description !== undefined && descCol !== -1) {
+        sheet.getRange(targetRow, descCol + 1).setValue(item.description);
+      }
+      if (item.assigned !== undefined && assignedCol !== -1) {
+        sheet.getRange(targetRow, assignedCol + 1).setValue(item.assigned);
+      }
+      if (item.picUrl !== undefined && picsCol !== -1) {
+        sheet.getRange(targetRow, picsCol + 1).setValue(item.picUrl);
+      }
+      if (item.cost !== undefined && costCol !== -1) {
+        sheet.getRange(targetRow, costCol + 1).setValue(item.cost);
+      }
+      if (item.status !== undefined && statusCol !== -1) {
+        sheet.getRange(targetRow, statusCol + 1).setValue(item.status);
+      }
+      if (item.type !== undefined && typeCol !== -1) {
+        sheet.getRange(targetRow, typeCol + 1).setValue(item.type);
+      }
+      if (item.location !== undefined && locationCol !== -1) {
+        sheet.getRange(targetRow, locationCol + 1).setValue(item.location);
+      }
+      if (item.notes !== undefined && performerNotesCol !== -1) {
+        sheet.getRange(targetRow, performerNotesCol + 1).setValue(item.notes);
+      }
+    }
+    
+    return {
+      success: true,
+      added: addedCount,
+      updated: updatedCount
+    };
+  } catch (error) {
+    Logger.log("Error in uploadInventory: " + error.toString());
     return {
       success: false,
       error: error.message || error.toString()
