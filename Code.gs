@@ -653,7 +653,12 @@ function uploadInventory(adminEmail, items) {
     const idCol = lowerHeaders.indexOf("id");
     const descCol = lowerHeaders.indexOf("item description");
     const assignedCol = lowerHeaders.indexOf("assigned");
-    const picsCol = lowerHeaders.indexOf("pics") !== -1 ? lowerHeaders.indexOf("pics") : lowerHeaders.indexOf("pic");
+    let picsCol = lowerHeaders.indexOf("pics");
+    if (picsCol === -1) picsCol = lowerHeaders.indexOf("pic");
+    if (picsCol === -1) picsCol = lowerHeaders.indexOf("picture");
+    if (picsCol === -1) picsCol = lowerHeaders.indexOf("image");
+    if (picsCol === -1) picsCol = lowerHeaders.indexOf("imagen");
+    if (picsCol === -1) picsCol = lowerHeaders.indexOf("photo");
     const costCol = lowerHeaders.indexOf("replacement cost");
     const statusCol = lowerHeaders.indexOf("status");
     let typeCol = lowerHeaders.indexOf("type");
@@ -699,6 +704,7 @@ function uploadInventory(adminEmail, items) {
           item.picUrl = savePictureToDrive(item.pictureData, item.pictureName);
         } catch (err) {
           Logger.log("Error saving picture to Drive: " + err.toString());
+          throw new Error("Failed to save picture to Google Drive: " + err.toString());
         }
       }
       
@@ -792,6 +798,18 @@ function savePictureToDrive(base64Data, fileName) {
   } catch (err) {
     Logger.log("Failed to save picture to Drive: " + err.toString());
     throw err;
+  }
+}
+
+/**
+ * Run this function once in the Google Apps Script editor to authorize Google Drive permissions!
+ */
+function triggerAuthorizationPrompt() {
+  try {
+    DriveApp.getRootFolder();
+    Logger.log("Drive permissions successfully authorized!");
+  } catch (e) {
+    Logger.log("Authorization failed: " + e.toString());
   }
 }
 
