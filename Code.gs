@@ -693,6 +693,15 @@ function uploadInventory(adminEmail, items) {
       let targetRow = -1;
       let itemId = item.id ? item.id.toString().trim() : "";
       
+      // If base64 image data is provided, save it to Drive first
+      if (item.pictureData && item.pictureName) {
+        try {
+          item.picUrl = savePictureToDrive(item.pictureData, item.pictureName);
+        } catch (err) {
+          Logger.log("Error saving picture to Drive: " + err.toString());
+        }
+      }
+      
       // Determine if this is an update or add
       if (itemId && idRowMap[itemId] !== undefined) {
         targetRow = idRowMap[itemId];
@@ -752,6 +761,37 @@ function uploadInventory(adminEmail, items) {
       success: false,
       error: error.message || error.toString()
     };
+  }
+}
+
+/**
+ * Saves a base64 encoded image to Google Drive and returns the webView/download link.
+ */
+function savePictureToDrive(base64Data, fileName) {
+  try {
+    const parts = base64Data.split(',');
+    const contentType = parts[0].substring(5, parts[0].indexOf(';'));
+    const bytes = Utilities.base64Decode(parts[1]);
+    const blob = Utilities.newBlob(bytes, contentType, fileName);
+    
+    // Find or create the directory folder
+    let folder;
+    const folders = DriveApp.getFoldersByName("Tradicion_Inventory_Pics");
+    if (folders.hasNext()) {
+      folder = folders.next();
+    } else {
+      folder = DriveApp.createFolder("Tradicion_Inventory_Pics");
+    }
+    
+    const file = folder.createFile(blob);
+    // Set file sharing to anyone with link viewable so the app can display it
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    
+    // Return direct download/view link
+    return "https://drive.google.com/uc?export=view&id=" + file.getId();
+  } catch (err) {
+    Logger.log("Failed to save picture to Drive: " + err.toString());
+    throw err;
   }
 }
 
