@@ -1243,3 +1243,32 @@ function emailFilteredInventoryList(userEmail, recipientEmail, items, filterType
   }
 }
 
+/**
+ * Test function to verify updateItemStatusAndNotes without arguments.
+ * You can safely select and run this function in the Apps Script Editor toolbar!
+ */
+function testUpdateItemStatusAndNotes() {
+  try {
+    const ss = getInventorySpreadsheet();
+    const sheet = ss.getSheetByName("Inventory") || ss.getSheets()[0];
+    if (!sheet) {
+      Logger.log("Error: Inventory sheet not found.");
+      return;
+    }
+    
+    // Try to use row 2 as a safe test row
+    const rowNum = 2;
+    const values = sheet.getRange(rowNum, 1, 1, sheet.getLastColumn()).getValues()[0];
+    const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    const lowerHeaders = headers.map(h => h.toString().toLowerCase().trim());
+    const idCol = lowerHeaders.indexOf("id");
+    const expectedId = idCol !== -1 ? values[idCol].toString().trim() : "1";
+    
+    Logger.log("Running updateItemStatusAndNotes test for row 2 (ID: " + expectedId + ")...");
+    const result = updateItemStatusAndNotes(rowNum, expectedId, "Yes. I got it", "Test Notes from Editor");
+    Logger.log("Test Result: " + JSON.stringify(result));
+  } catch (err) {
+    Logger.log("Test execution failed: " + err.toString());
+  }
+}
+
