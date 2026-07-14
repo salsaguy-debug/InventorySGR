@@ -2,14 +2,22 @@ const fs = require('fs');
 const path = require('path');
 const https = require('https');
 
-// Helper to fetch CSV data from spreadsheet
-function fetchCsv() {
-  const url = "https://docs.google.com/spreadsheets/d/1IPZznR7kK-oCoThEHmACgMOW6KJfP8NSwzGKv3q-ITY/export?format=csv";
+// Helper to fetch CSV data from spreadsheet (following redirects)
+function fetchCsv(url) {
+  if (!url) {
+    url = "https://docs.google.com/spreadsheets/d/1IPZznR7kK-oCoThEHmACgMOW6KJfP8NSwzGKv3q-ITY/export?format=csv";
+  }
   return new Promise((resolve, reject) => {
     https.get(url, (res) => {
-      let data = '';
-      res.on('data', (chunk) => data += chunk);
-      res.on('end', () => resolve(data));
+      if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+        resolve(fetchCsv(res.headers.location));
+      } else if (res.statusCode !== 200) {
+        reject(new Error(`Failed to fetch CSV: Status code ${res.statusCode}`));
+      } else {
+        let data = '';
+        res.on('data', (chunk) => data += chunk);
+        res.on('end', () => resolve(data));
+      }
     }).on('error', (err) => reject(err));
   });
 }

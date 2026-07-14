@@ -365,7 +365,7 @@ function getAllInventory() {
   const picsCol = lowerHeaders.indexOf("pics");
   const picCol = lowerHeaders.indexOf("pic");
   const costCol = lowerHeaders.indexOf("replacement cost");
-  const statusCol = lowerHeaders.indexOf("status");
+  const statusCol = getOrCreateStatusColumn(sheet, lowerHeaders);
   let typeCol = lowerHeaders.indexOf("type");
   if (typeCol === -1) {
     typeCol = lowerHeaders.indexOf("types");
@@ -466,7 +466,7 @@ function getPerformerInventory(email) {
   const picsCol = lowerHeaders.indexOf("pics");
   const picCol = lowerHeaders.indexOf("pic");
   const costCol = lowerHeaders.indexOf("replacement cost");
-  const statusCol = lowerHeaders.indexOf("status");
+  const statusCol = getOrCreateStatusColumn(sheet, lowerHeaders);
   let typeCol = lowerHeaders.indexOf("type");
   if (typeCol === -1) {
     typeCol = lowerHeaders.indexOf("types");
@@ -551,7 +551,43 @@ function getOrCreatePerformerNotesColumn(sheet, lowerHeaders) {
     Logger.log("Failed to mirror header styles: " + err.toString());
   }
   
+  lowerHeaders.push("performer notes");
+  
   // Return new index (0-based)
+  return nextColNum - 1;
+}
+
+/**
+ * Locates or creates a 'Status' column in the spreadsheet dynamically.
+ * Self-heals the sheet structure if column doesn't exist yet.
+ */
+function getOrCreateStatusColumn(sheet, lowerHeaders) {
+  let index = lowerHeaders.indexOf("status");
+  if (index === -1) {
+    index = lowerHeaders.indexOf("estado");
+  }
+  if (index !== -1) {
+    return index;
+  }
+  
+  // If not found, insert column at the end
+  const nextColNum = sheet.getLastColumn() + 1;
+  sheet.getRange(1, nextColNum).setValue("Status");
+  
+  // Format the header style to match adjacent headers
+  try {
+    const adjacentHeader = sheet.getRange(1, nextColNum - 1);
+    const newHeader = sheet.getRange(1, nextColNum);
+    newHeader.setFontWeight(adjacentHeader.getFontWeight());
+    newHeader.setFontColor(adjacentHeader.getFontColor());
+    newHeader.setBackground(adjacentHeader.getBackground());
+    newHeader.setHorizontalAlignment(adjacentHeader.getHorizontalAlignment());
+  } catch (err) {
+    Logger.log("Failed to mirror header styles: " + err.toString());
+  }
+  
+  lowerHeaders.push("status");
+  
   return nextColNum - 1;
 }
 
@@ -571,12 +607,8 @@ function updateItemStatusAndNotes(rowIndex, expectedId, newStatus, performerNote
     const lowerHeaders = headers.map(h => h.toString().toLowerCase().trim());
     
     const idCol = lowerHeaders.indexOf("id");
-    const statusCol = lowerHeaders.indexOf("status");
-    const notesCol = getOrCreatePerformerNotesColumn(sheet, lowerHeaders);
-    
-    if (statusCol === -1) {
-      throw new Error("Unable to locate 'Status' column in spreadsheet headers.");
-    }
+    const statusCol = getOrCreateStatusColumn(sheet, lowerHeaders);
+    const performerNotesCol = getOrCreatePerformerNotesColumn(sheet, lowerHeaders);
     
     const rowNum = parseInt(rowIndex, 10);
     if (isNaN(rowNum) || rowNum <= 1 || rowNum > sheet.getLastRow()) {
@@ -660,7 +692,7 @@ function uploadInventory(adminEmail, items) {
     if (picsCol === -1) picsCol = lowerHeaders.indexOf("imagen");
     if (picsCol === -1) picsCol = lowerHeaders.indexOf("photo");
     const costCol = lowerHeaders.indexOf("replacement cost");
-    const statusCol = lowerHeaders.indexOf("status");
+    const statusCol = getOrCreateStatusColumn(sheet, lowerHeaders);
     let typeCol = lowerHeaders.indexOf("type");
     if (typeCol === -1) {
       typeCol = lowerHeaders.indexOf("types");
