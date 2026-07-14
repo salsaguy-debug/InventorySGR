@@ -27,17 +27,12 @@
 const INVENTORY_SPREADSHEET_ID = "1IPZznR7kK-oCoThEHmACgMOW6KJfP8NSwzGKv3q-ITY";
 const MASTER_SOURCE_SPREADSHEET_ID = "1u-kw9x5WJPO5NgvkH0-B8bNPWPLvVF28myNvbkc9pFk";
 
-// Authorized Administrator Emails (Director and Subdirector)
-const ADMIN_EMAILS = ["rodriguez2113@gmail.com", "darienl140@gmail.com"];
 
 function isAdmin(email) {
   if (!email) return false;
   const cleanEmail = email.trim().toLowerCase();
-  if (ADMIN_EMAILS.indexOf(cleanEmail) !== -1) {
-    return true;
-  }
   
-  // Dynamic fallback check in the Profiles sheet
+  // Dynamic check in the Profiles sheet
   try {
     const ss = getMasterSourceSpreadsheet();
     const profilesSheet = ss.getSheetByName("Profiles") || ss.getSheetByName("Profile") || ss.getSheetByName("Sheet1") || ss.getSheetByName("Crosswalk");
