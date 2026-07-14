@@ -491,19 +491,19 @@ function getPerformerInventory(email) {
     const rowEmail = row[assignedCol].toString().trim().toLowerCase();
     if (rowEmail === email) {
       // Extract properties safely
-      const itemId = idCol !== -1 ? row[idCol].toString().trim() : "N/A";
-      const itemDesc = descCol !== -1 ? row[descCol].toString().trim() : "Unlabeled Costume/Prop";
+      const itemId = idCol !== -1 && row.length > idCol ? row[idCol].toString().trim() : "N/A";
+      const itemDesc = descCol !== -1 && row.length > descCol ? row[descCol].toString().trim() : "Unlabeled Costume/Prop";
       
       // Get image link (check pics first, then fallback to pic)
       let rawPic = "";
-      if (picsCol !== -1 && row[picsCol]) {
+      if (picsCol !== -1 && row.length > picsCol && row[picsCol]) {
         rawPic = row[picsCol].toString().trim();
-      } else if (picCol !== -1 && row[picCol]) {
+      } else if (picCol !== -1 && row.length > picCol && row[picCol]) {
         rawPic = row[picCol].toString().trim();
       }
       
-      const replacementCost = costCol !== -1 ? row[costCol].toString().trim() : "N/A";
-      const currentStatus = statusCol !== -1 ? row[statusCol].toString().trim() : "-";
+      const replacementCost = costCol !== -1 && row.length > costCol ? row[costCol].toString().trim() : "N/A";
+      const currentStatus = statusCol !== -1 && row.length > statusCol && row[statusCol] !== undefined && row[statusCol] !== null ? row[statusCol].toString().trim() : "-";
       const notes = performerNotesCol !== -1 && row.length > performerNotesCol ? row[performerNotesCol].toString().trim() : "";
       const itemType = typeCol !== -1 && row.length > typeCol ? row[typeCol].toString().trim() : "General";
       const location = locationCol !== -1 && row.length > locationCol ? row[locationCol].toString().trim() : "N/A";
