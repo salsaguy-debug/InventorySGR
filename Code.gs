@@ -736,7 +736,7 @@ function uploadInventory(adminEmail, items) {
       }
       
       // Determine if this is an update or add
-      if (itemId && idRowMap[itemId] !== undefined) {
+      if (!item.alwaysAppend && itemId && idRowMap[itemId] !== undefined) {
         targetRow = idRowMap[itemId];
         updatedCount++;
       } else {
