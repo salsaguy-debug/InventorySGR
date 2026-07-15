@@ -680,8 +680,16 @@ function uploadInventory(adminEmail, items) {
     const idCol = lowerHeaders.indexOf("id");
     const descCol = lowerHeaders.indexOf("item description");
     const assignedCol = lowerHeaders.indexOf("assigned");
+    // Resolve URL column and rendered picture column
     let picsCol = lowerHeaders.indexOf("pics");
-    if (picsCol === -1) picsCol = lowerHeaders.indexOf("pic");
+    let picRenderCol = lowerHeaders.indexOf("pic");
+    
+    // If "pics" was not found, fall back to "pic" for URL
+    if (picsCol === -1) {
+      picsCol = picRenderCol;
+      picRenderCol = -1; // No separate render column if "pic" is the URL column itself
+    }
+    // If picsCol is still not found, try other synonyms
     if (picsCol === -1) picsCol = lowerHeaders.indexOf("picture");
     if (picsCol === -1) picsCol = lowerHeaders.indexOf("image");
     if (picsCol === -1) picsCol = lowerHeaders.indexOf("imagen");
@@ -764,7 +772,13 @@ function uploadInventory(adminEmail, items) {
         sheet.getRange(targetRow, assignedCol + 1).setValue(item.assigned);
       }
       if (item.picUrl !== undefined && picsCol !== -1) {
-        sheet.getRange(targetRow, picsCol + 1).setValue(item.picUrl);
+        const urlRange = sheet.getRange(targetRow, picsCol + 1);
+        urlRange.setValue(item.picUrl);
+        
+        // Write dynamic =IMAGE() formula in the rendered picture column if present
+        if (picRenderCol !== -1) {
+          sheet.getRange(targetRow, picRenderCol + 1).setFormula(`=IMAGE(${urlRange.getA1Notation()})`);
+        }
       }
       if (item.cost !== undefined && costCol !== -1) {
         sheet.getRange(targetRow, costCol + 1).setValue(item.cost);
