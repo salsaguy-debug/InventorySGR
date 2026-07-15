@@ -821,7 +821,7 @@ function savePictureToDrive(base64Data, fileName) {
     file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
     
     // Return direct download/view link
-    return "https://drive.google.com/uc?export=view&id=" + file.getId();
+    return "https://drive.google.com/thumbnail?sz=w1280&id=" + file.getId();
   } catch (err) {
     Logger.log("Failed to save picture to Drive: " + err.toString());
     throw err;
