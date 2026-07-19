@@ -72,6 +72,7 @@ function getPerformerInventory(email, csvRows) {
   const picCol = headers.indexOf("pic");
   const costCol = headers.indexOf("replacement cost");
   const statusCol = headers.indexOf("status");
+  const sexCol = headers.indexOf("sex");
   const performerNotesCol = headers.indexOf("performer notes") !== -1 ? headers.indexOf("performer notes") : headers.length; // mock notes at the end
 
   const items = [];
@@ -87,6 +88,7 @@ function getPerformerInventory(email, csvRows) {
       else if (picCol !== -1 && row[picCol]) rawPic = row[picCol].toString().trim();
       const replacementCost = costCol !== -1 ? row[costCol].toString().trim() : "N/A";
       const currentStatus = statusCol !== -1 ? row[statusCol].toString().trim() : "-";
+      const sex = sexCol !== -1 ? row[sexCol].toString().trim() : "";
       const notes = performerNotesCol !== -1 && row.length > performerNotesCol ? row[performerNotesCol].toString().trim() : "";
 
       items.push({
@@ -96,6 +98,7 @@ function getPerformerInventory(email, csvRows) {
         picUrl: rawPic,
         cost: replacementCost,
         status: currentStatus || "-",
+        sex: sex,
         notes: notes
       });
     }

@@ -1412,29 +1412,39 @@
       background-color: transparent;
     }
     .pill-id {
-      background-color: rgba(148, 163, 184, 0.15);
-      border: 1px solid rgba(148, 163, 184, 0.3);
+      background-color: rgba(148, 163, 184, 0.12);
+      border: 1px solid rgba(148, 163, 184, 0.25);
       color: var(--text-muted);
     }
     .pill-cost {
-      background-color: rgba(245, 158, 11, 0.15);
-      border: 1px solid rgba(245, 158, 11, 0.3);
-      color: var(--warning-orange);
+      background-color: rgba(245, 197, 66, 0.12);
+      border: 1px solid rgba(245, 197, 66, 0.25);
+      color: var(--accent-gold);
     }
     .pill-type {
-      background-color: rgba(59, 130, 246, 0.12);
-      border: 1px solid rgba(59, 130, 246, 0.25);
-      color: var(--info-blue);
+      background-color: rgba(99, 102, 241, 0.12);
+      border: 1px solid rgba(99, 102, 241, 0.25);
+      color: #818cf8;
     }
     .pill-assigned {
-      background-color: rgba(59, 130, 246, 0.15);
-      border: 1px solid rgba(59, 130, 246, 0.3);
-      color: var(--info-blue);
+      background-color: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      color: #38bdf8;
     }
     .pill-location {
-      background-color: rgba(16, 185, 129, 0.15);
-      border: 1px solid rgba(16, 185, 129, 0.3);
+      background-color: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.25);
       color: var(--success-green);
+    }
+    .pill-status {
+      border: 1.5px solid var(--text-main);
+      color: var(--text-main);
+      background-color: transparent;
+    }
+    .pill-sex {
+      border: 1.5px solid var(--text-main);
+      color: var(--text-main);
+      background-color: transparent;
     }
     .form-row {
       display: flex;
@@ -1675,32 +1685,16 @@
         </div>
 
         <div style="display: flex; flex-direction: column; gap: 1rem; width: 100%;">
-          <!-- Description row -->
-          <div class="form-row">
-            <span class="form-pill-label pill-desc" id="lblFormDesc">Description</span>
-            <input type="text" id="formInputDesc" class="form-input" placeholder="Enter costume/prop description..." style="flex-grow: 1; height: 34px; border-radius: var(--radius-sm);" required>
-          </div>
-
           <!-- ID row -->
           <div class="form-row">
             <span class="form-pill-label pill-id" id="lblFormId">ID:</span>
             <input type="text" id="formInputId" class="form-input" placeholder="e.g. 15" style="flex-grow: 1; height: 34px; border-radius: var(--radius-sm);">
           </div>
 
-          <!-- Cost row -->
+          <!-- Description row -->
           <div class="form-row">
-            <span class="form-pill-label pill-cost" id="lblFormCost">Cost:</span>
-            <input type="text" id="formInputCost" class="form-input" placeholder="e.g. 75" style="flex-grow: 1; height: 34px; border-radius: var(--radius-sm);">
-          </div>
-
-          <!-- Type select dropdown -->
-          <div class="form-row">
-            <span class="form-pill-label pill-type" id="lblFormType">Type:</span>
-            <div class="view-select-container" style="flex-grow: 1;">
-              <select id="formInputType" class="view-select" style="width: 100%; height: 34px; padding: 0 0.5rem; border-radius: var(--radius-sm);">
-                <!-- Dynamically populated in JS -->
-              </select>
-            </div>
+            <span class="form-pill-label pill-desc" id="lblFormDesc">Description</span>
+            <input type="text" id="formInputDesc" class="form-input" placeholder="Enter costume/prop description..." style="flex-grow: 1; height: 34px; border-radius: var(--radius-sm);" required>
           </div>
 
           <!-- Assigned select dropdown -->
@@ -1734,11 +1728,24 @@
             </div>
           </div>
 
+          <!-- Type select dropdown -->
+          <div class="form-row">
+            <span class="form-pill-label pill-type" id="lblFormType">Type:</span>
+            <div class="view-select-container" style="flex-grow: 1;">
+              <select id="formInputType" class="view-select" style="width: 100%; height: 34px; padding: 0 0.5rem; border-radius: var(--radius-sm);">
+                <!-- Dynamically populated in JS -->
+              </select>
+            </div>
+          </div>
+
+          <!-- Divider -->
+          <div style="height: 1px; background-color: var(--border-color); margin: 0.5rem 0; width: 100%; max-width: 500px;"></div>
+
           <!-- Item Status dropdown -->
-          <div style="display: flex; flex-direction: column; gap: 0.35rem; width: 100%; max-width: 500px; margin-top: 0.5rem;">
-            <label id="lblFormStatus" style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px;">Item Status</label>
-            <div class="view-select-container" style="width: 100%;">
-              <select id="formInputStatus" class="view-select" style="width: 100%; height: 38px; padding-left: 0.75rem; border-radius: var(--radius-sm);">
+          <div class="form-row">
+            <span class="form-pill-label pill-status" id="lblFormStatus">STATUS:</span>
+            <div class="view-select-container" style="flex-grow: 1;">
+              <select id="formInputStatus" class="view-select" style="width: 100%; height: 34px; padding: 0 0.5rem; border-radius: var(--radius-sm);">
                 <option value="-">— (Not Set)</option>
                 <option value="Yes. I got it">Yes. I got it</option>
                 <option value="I returned it">I returned it</option>
@@ -1752,9 +1759,30 @@
             </div>
           </div>
 
+          <!-- Sex dropdown -->
+          <div class="form-row">
+            <span class="form-pill-label pill-sex" id="lblFormSex">Sex</span>
+            <div class="view-select-container" style="flex-grow: 1;">
+              <select id="formInputSex" class="view-select" style="width: 100%; height: 34px; padding: 0 0.5rem; border-radius: var(--radius-sm);">
+                <option value="">— (Not Set)</option>
+                <option value="All">All</option>
+                <option value="Boy">Boy</option>
+                <option value="Girl">Girl</option>
+                <option value="Man">Man</option>
+                <option value="Woman">Woman</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Cost row -->
+          <div class="form-row">
+            <span class="form-pill-label pill-cost" id="lblFormCost">Cost:</span>
+            <input type="text" id="formInputCost" class="form-input" placeholder="e.g. 75" style="flex-grow: 1; height: 34px; border-radius: var(--radius-sm);">
+          </div>
+
           <!-- Performer Notes textarea -->
           <div style="display: flex; flex-direction: column; gap: 0.35rem; width: 100%; max-width: 500px; margin-top: 0.5rem;">
-            <label id="lblFormNotes" style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px;">Performer Notes</label>
+            <label id="lblFormNotes" style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px;">PERFORMER NOTES:</label>
             <textarea id="formInputNotes" class="form-input" style="height: 75px; resize: none; padding: 0.5rem; border-radius: var(--radius-sm);" placeholder="Write observations or annotations here..."></textarea>
           </div>
 
@@ -3732,6 +3760,7 @@
         document.getElementById('formInputAssigned').value = "";
         document.getElementById('formInputLocation').value = "";
         document.getElementById('formInputStatus').value = "-";
+        document.getElementById('formInputSex').selectedIndex = 0;
         document.getElementById('formInputNotes').value = "";
         document.getElementById('formInputPicture').value = "";
         document.getElementById('formPicturePreviewContainer').innerHTML = `<span style="font-size: 0.6rem; color: var(--text-muted);">No Pic</span>`;
@@ -3783,6 +3812,7 @@
       const assigned = document.getElementById('formInputAssigned').value.trim().toLowerCase();
       const location = document.getElementById('formInputLocation').value.trim();
       const status = document.getElementById('formInputStatus').value;
+      const sex = document.getElementById('formInputSex').value;
       const notes = document.getElementById('formInputNotes').value.trim();
       
       const fileInput = document.getElementById('formInputPicture');
@@ -3796,6 +3826,7 @@
         assigned: assigned,
         location: location,
         status: status,
+        sex: sex,
         notes: notes,
         alwaysAppend: true
       };

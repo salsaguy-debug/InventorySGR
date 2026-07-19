@@ -60,10 +60,11 @@ function validateApp() {
   }
   console.log("✅ All required dropdown options are correctly defined in index.html.");
   
-  // 3b. Verify "Inventory Location" and "Type" headers checking in Code.gs
+  // 3b. Verify "Inventory Location", "Type", and "Sex" headers checking in Code.gs
   console.log("Checking header validation logic in Code.gs...");
   const hasTypeHeaderCheck = codeGs.includes('indexOf("type")') || codeGs.includes("indexOf('type')");
   const hasLocationHeaderCheck = codeGs.includes('indexOf("inventory location")') || codeGs.includes("indexOf('inventory location')");
+  const hasSexHeaderCheck = codeGs.includes('indexOf("sex")') || codeGs.includes("indexOf('sex')");
   
   if (hasTypeHeaderCheck) {
     console.log("  ✅ Found 'Type' header lookup in Code.gs.");
@@ -79,10 +80,18 @@ function validateApp() {
     process.exit(1);
   }
 
-  // 3c. Verify "— (Unassigned)" options in index.html for Type and Location
-  console.log("Checking default '— (Unassigned)' option for Type and Location in index.html...");
+  if (hasSexHeaderCheck) {
+    console.log("  ✅ Found 'Sex' header lookup in Code.gs.");
+  } else {
+    console.error("  ❌ Missing 'Sex' header lookup in Code.gs.");
+    process.exit(1);
+  }
+
+  // 3c. Verify "— (Unassigned)" and "Sex" options in index.html
+  console.log("Checking default options and new Sex dropdown in index.html...");
   const hasUnassignedType = indexHtml.includes('— (Unassigned)') && indexHtml.includes('formInputType');
   const hasUnassignedLocation = indexHtml.includes('value=""') && indexHtml.includes('— (Unassigned)') && indexHtml.includes('formInputLocation');
+  const hasSexDropdown = indexHtml.includes('id="formInputSex"') && indexHtml.includes('value="Girl"') && indexHtml.includes('value="Boy"') && indexHtml.includes('value="Woman"') && indexHtml.includes('value="Man"') && indexHtml.includes('value="All"');
   
   if (hasUnassignedType) {
     console.log("  ✅ Found default '— (Unassigned)' option logic for formInputType.");
@@ -95,6 +104,13 @@ function validateApp() {
     console.log("  ✅ Found default '— (Unassigned)' option in HTML for formInputLocation.");
   } else {
     console.error("  ❌ Missing default '— (Unassigned)' option in HTML for formInputLocation.");
+    process.exit(1);
+  }
+
+  if (hasSexDropdown) {
+    console.log("  ✅ Found 'Sex' dropdown with required options (All, Boy, Girl, Man, Woman) in index.html.");
+  } else {
+    console.error("  ❌ Missing or incorrect 'Sex' dropdown options in index.html.");
     process.exit(1);
   }
 

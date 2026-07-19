@@ -368,6 +368,8 @@ function getAllInventory() {
   const locationCol = lowerHeaders.indexOf("inventory location") !== -1
     ? lowerHeaders.indexOf("inventory location")
     : lowerHeaders.indexOf("location");
+    
+  const sexCol = lowerHeaders.indexOf("sex");
   
   const performerNotesCol = getOrCreatePerformerNotesColumn(sheet, lowerHeaders);
   
@@ -393,6 +395,7 @@ function getAllInventory() {
     const notes = performerNotesCol !== -1 && row.length > performerNotesCol ? row[performerNotesCol].toString().trim() : "";
     const itemType = typeCol !== -1 && row.length > typeCol ? row[typeCol].toString().trim() : "General";
     const location = locationCol !== -1 && row.length > locationCol ? row[locationCol].toString().trim() : "N/A";
+    const sex = sexCol !== -1 && row.length > sexCol ? row[sexCol].toString().trim() : "";
     
     items.push({
       rowIndex: i + 1,
@@ -404,7 +407,8 @@ function getAllInventory() {
       notes: notes,
       assigned: rowEmail,
       type: itemType,
-      location: location
+      location: location,
+      sex: sex
     });
   }
   
@@ -469,6 +473,8 @@ function getPerformerInventory(email) {
   const locationCol = lowerHeaders.indexOf("inventory location") !== -1
     ? lowerHeaders.indexOf("inventory location")
     : lowerHeaders.indexOf("location");
+    
+  const sexCol = lowerHeaders.indexOf("sex");
   
   if (assignedCol === -1) {
     throw new Error("System Error: 'Assigned' performer column was not found in the spreadsheet headers.");
@@ -502,6 +508,7 @@ function getPerformerInventory(email) {
       const notes = performerNotesCol !== -1 && row.length > performerNotesCol ? row[performerNotesCol].toString().trim() : "";
       const itemType = typeCol !== -1 && row.length > typeCol ? row[typeCol].toString().trim() : "General";
       const location = locationCol !== -1 && row.length > locationCol ? row[locationCol].toString().trim() : "N/A";
+      const sex = sexCol !== -1 && row.length > sexCol ? row[sexCol].toString().trim() : "";
       
       items.push({
         rowIndex: i + 1, // 1-based spreadsheet row number
@@ -512,7 +519,8 @@ function getPerformerInventory(email) {
         status: currentStatus || "-",
         notes: notes,
         type: itemType,
-        location: location
+        location: location,
+        sex: sex
       });
     }
   }
@@ -703,6 +711,8 @@ function uploadInventory(adminEmail, items) {
     const locationCol = lowerHeaders.indexOf("inventory location") !== -1
       ? lowerHeaders.indexOf("inventory location")
       : lowerHeaders.indexOf("location");
+      
+    const sexCol = lowerHeaders.indexOf("sex");
     
     // Auto-create Performer notes if not existing
     const performerNotesCol = getOrCreatePerformerNotesColumn(sheet, lowerHeaders);
@@ -806,6 +816,9 @@ function uploadInventory(adminEmail, items) {
       }
       if (item.location !== undefined && locationCol !== -1) {
         sheet.getRange(targetRow, locationCol + 1).setValue(item.location);
+      }
+      if (item.sex !== undefined && sexCol !== -1) {
+        sheet.getRange(targetRow, sexCol + 1).setValue(item.sex);
       }
       if (item.notes !== undefined && performerNotesCol !== -1) {
         sheet.getRange(targetRow, performerNotesCol + 1).setValue(item.notes);
@@ -1535,6 +1548,7 @@ function recreateValidations() {
       : lowerHeaders.indexOf("location");
       
     const assignedCol = lowerHeaders.indexOf("assigned");
+    const sexCol = lowerHeaders.indexOf("sex");
       
     if (typeCol === -1) {
       Logger.log("Warning: Type column not found.");
@@ -1544,6 +1558,9 @@ function recreateValidations() {
     }
     if (assignedCol === -1) {
       Logger.log("Warning: Assigned column not found.");
+    }
+    if (sexCol === -1) {
+      Logger.log("Warning: Sex column not found.");
     }
     
     const lastRow = sheet.getLastRow();
@@ -1643,7 +1660,27 @@ function recreateValidations() {
       Logger.log("Assigned validation recreated with options: " + JSON.stringify(performerEmails));
     }
     
-    Logger.log("Successfully recreated dropdown validation lists for Type, Location, and Assigned.");
+    // 4. Recreate Sex Validation
+    if (sexCol !== -1) {
+      const sexOptions = [
+        "— (Not Set)",
+        "All",
+        "Boy",
+        "Girl",
+        "Man",
+        "Woman"
+      ];
+      
+      const sexRule = SpreadsheetApp.newDataValidation()
+        .requireValueInList(sexOptions, true)
+        .setAllowInvalid(true)
+        .build();
+        
+      sheet.getRange(2, sexCol + 1, lastRow - 1, 1).setDataValidation(sexRule);
+      Logger.log("Sex validation recreated with options: " + JSON.stringify(sexOptions));
+    }
+    
+    Logger.log("Successfully recreated dropdown validation lists for Type, Location, Assigned, and Sex.");
   } catch (err) {
     Logger.log("Error in recreateValidations: " + err.toString());
   }
