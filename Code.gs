@@ -1296,3 +1296,53 @@ function testUpdateItemStatusAndNotes() {
   }
 }
 
+/**
+ * One-time migration function to convert all existing item descriptions in the sheet
+ * into =HYPERLINK formulas if they have a picture URL.
+ * You can select and run this function once from the Apps Script Editor toolbar!
+ */
+function migrateDescriptionsToHyperlinks() {
+  try {
+    const ss = getInventorySpreadsheet();
+    const sheet = ss.getSheetByName("Inventory") || ss.getSheets()[0];
+    if (!sheet) {
+      Logger.log("Error: Inventory database sheet not found.");
+      return;
+    }
+    
+    const values = sheet.getDataRange().getValues();
+    if (values.length <= 1) {
+      Logger.log("No data rows found to migrate.");
+      return;
+    }
+    
+    const headers = values[0].map(h => h.toString().toLowerCase().trim());
+    const descCol = headers.indexOf("item description");
+    let picsCol = headers.indexOf("pics");
+    if (picsCol === -1) picsCol = headers.indexOf("pic");
+    if (picsCol === -1) picsCol = headers.indexOf("picture");
+    
+    if (descCol === -1 || picsCol === -1) {
+      Logger.log("Error: Required 'Item Description' or 'Pics' columns not found.");
+      return;
+    }
+    
+    let migratedCount = 0;
+    Logger.log("Starting migration of existing item descriptions to hyperlinks...");
+    for (let i = 1; i < values.length; i++) {
+      const desc = values[i][descCol].toString().trim();
+      const picUrl = values[i][picsCol].toString().trim();
+      
+      // If it has a pic URL and the description is not already a formula/hyperlink
+      if (picUrl && desc && !desc.startsWith("=")) {
+        const safeDesc = desc.replace(/"/g, '""');
+        sheet.getRange(i + 1, descCol + 1).setFormula(`=HYPERLINK("${picUrl}", "${safeDesc}")`);
+        migratedCount++;
+      }
+    }
+    Logger.log("Migration completed! Successfully converted " + migratedCount + " item descriptions to hyperlinks.");
+  } catch (err) {
+    Logger.log("Migration failed: " + err.toString());
+  }
+}
+
