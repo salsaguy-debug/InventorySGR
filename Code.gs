@@ -1346,3 +1346,66 @@ function migrateDescriptionsToHyperlinks() {
   }
 }
 
+/**
+ * Diagnostic function to check and log the data validation criteria of the "Type" column.
+ * You can select and run this function from the Apps Script Editor toolbar!
+ */
+function logTypeValidationCriteria() {
+  try {
+    const ss = getInventorySpreadsheet();
+    const sheet = ss.getSheetByName("Inventory") || ss.getSheets()[0];
+    if (!sheet) {
+      Logger.log("Error: Inventory database sheet not found.");
+      return;
+    }
+    
+    const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    const lowerHeaders = headers.map(h => h.toString().toLowerCase().trim());
+    let typeCol = lowerHeaders.indexOf("type");
+    if (typeCol === -1) typeCol = lowerHeaders.indexOf("types");
+    
+    if (typeCol === -1) {
+      Logger.log("Error: 'Type' column not found.");
+      return;
+    }
+    
+    // Check validation on the first few cells of the Type column
+    const range = sheet.getRange(2, typeCol + 1);
+    const validation = range.getDataValidation();
+    if (!validation) {
+      Logger.log("No data validation found on Row 2 of the 'Type' column.");
+      return;
+    }
+    
+    const criteriaType = validation.getCriteriaType();
+    const args = validation.getCriteriaValues();
+    Logger.log("Criteria Type: " + criteriaType);
+    Logger.log("Criteria Values: " + JSON.stringify(args));
+    
+    if (criteriaType === SpreadsheetApp.DataValidationCriteria.VALUE_IN_RANGE) {
+      const sourceRange = args[0];
+      Logger.log("Validation Range A1 notation: " + sourceRange.getA1Notation());
+      Logger.log("Validation Range sheet: " + sourceRange.getSheet().getName());
+      Logger.log("Validation Range values: " + JSON.stringify(sourceRange.getValues()));
+    } else if (criteriaType === SpreadsheetApp.DataValidationCriteria.VALUE_IN_LIST) {
+      Logger.log("Validation List: " + JSON.stringify(args[0]));
+    }
+  } catch (err) {
+    Logger.log("Failed to inspect validation: " + err.toString());
+  }
+}
+
+/**
+ * Diagnostic function to list all sheet names in the spreadsheet.
+ */
+function listAllSheets() {
+  try {
+    const ss = getInventorySpreadsheet();
+    const sheets = ss.getSheets();
+    Logger.log("Sheets in spreadsheet:");
+    sheets.forEach(s => Logger.log("- " + s.getName()));
+  } catch (err) {
+    Logger.log("Failed to list sheets: " + err.toString());
+  }
+}
+
