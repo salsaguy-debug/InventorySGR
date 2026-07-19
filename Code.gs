@@ -765,8 +765,23 @@ function uploadInventory(adminEmail, items) {
       }
       
       // Write provided fields
-      if (item.description !== undefined && descCol !== -1) {
-        sheet.getRange(targetRow, descCol + 1).setValue(item.description);
+      let finalDesc = item.description;
+      if (finalDesc === undefined && targetRow !== -1 && descCol !== -1 && targetRow <= sheet.getLastRow()) {
+        finalDesc = sheet.getRange(targetRow, descCol + 1).getValue().toString().trim();
+      }
+
+      let activePicUrl = item.picUrl;
+      if (activePicUrl === undefined && targetRow !== -1 && picsCol !== -1 && targetRow <= sheet.getLastRow()) {
+        activePicUrl = sheet.getRange(targetRow, picsCol + 1).getValue().toString().trim();
+      }
+
+      if (finalDesc !== undefined && finalDesc !== "" && descCol !== -1) {
+        if (activePicUrl) {
+          const safeDesc = finalDesc.replace(/"/g, '""');
+          sheet.getRange(targetRow, descCol + 1).setFormula(`=HYPERLINK("${activePicUrl}", "${safeDesc}")`);
+        } else {
+          sheet.getRange(targetRow, descCol + 1).setValue(finalDesc);
+        }
       }
       if (item.assigned !== undefined && assignedCol !== -1) {
         sheet.getRange(targetRow, assignedCol + 1).setValue(item.assigned);
