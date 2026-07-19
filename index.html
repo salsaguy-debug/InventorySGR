@@ -3250,7 +3250,9 @@
           elements.performerSelect.appendChild(unassignedOpt);
           elements.drawerPerformerSelect.appendChild(unassignedOpt.cloneNode(true));
           
-          (state.performers || []).forEach(perf => {
+          const sortedPerformers = [...(state.performers || [])];
+          sortedPerformers.sort((a, b) => (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base' }));
+          sortedPerformers.forEach(perf => {
             if (perf && perf.email) {
               const opt = document.createElement('option');
               opt.value = perf.email;
@@ -3297,7 +3299,7 @@
       itemsList.forEach(item => {
         if (item && item.type) {
           const trimmed = item.type.trim();
-          if (trimmed) types.add(trimmed);
+          if (trimmed && trimmed !== "-") types.add(trimmed);
         }
       });
       
@@ -3741,10 +3743,14 @@
       const performerSelect = document.getElementById('formInputAssigned');
       
       if (typeSelect) {
-        const uniqueTypes = [...new Set(state.items.map(item => item.type).filter(Boolean))];
+        let uniqueTypes = [...new Set(state.items.map(item => item.type).filter(Boolean))];
+        uniqueTypes = uniqueTypes.map(t => t.trim()).filter(t => t && t !== "-");
+        
         if (uniqueTypes.indexOf("General") === -1) {
           uniqueTypes.push("General");
         }
+        uniqueTypes.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+        
         let html = `<option value="">— (Unassigned)</option>`;
         html += uniqueTypes.map(t => `<option value="${t}">${t}</option>`).join('');
         typeSelect.innerHTML = html;
@@ -3752,7 +3758,9 @@
       
       if (performerSelect) {
         let html = `<option value="">— (Unassigned)</option>`;
-        (state.performers || []).forEach(perf => {
+        const sortedPerformers = [...(state.performers || [])];
+        sortedPerformers.sort((a, b) => (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base' }));
+        sortedPerformers.forEach(perf => {
           if (perf && perf.email) {
             html += `<option value="${perf.email.toLowerCase()}">${perf.name || 'Unknown'} (${perf.email})</option>`;
           }
