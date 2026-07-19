@@ -1409,3 +1409,102 @@ function listAllSheets() {
   }
 }
 
+/**
+ * Diagnostic function to log all validation rules and criteria for every column in the "Inventory" sheet.
+ */
+function logAllDataValidations() {
+  try {
+    const ss = getInventorySpreadsheet();
+    const sheet = ss.getSheetByName("Inventory") || ss.getSheets()[0];
+    if (!sheet) {
+      Logger.log("Error: Inventory sheet not found.");
+      return;
+    }
+    
+    const lastCol = sheet.getLastColumn();
+    const headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
+    Logger.log("=== DATA VALIDATION ANALYSIS ===");
+    
+    for (let col = 1; col <= lastCol; col++) {
+      const headerName = headers[col - 1];
+      const cell = sheet.getRange(2, col);
+      const validation = cell.getDataValidation();
+      if (validation) {
+        const criteriaType = validation.getCriteriaType();
+        const args = validation.getCriteriaValues();
+        Logger.log(`Column ${col} (${headerName}): Validation type = ${criteriaType}`);
+        
+        if (criteriaType === SpreadsheetApp.DataValidationCriteria.VALUE_IN_RANGE) {
+          const sourceRange = args[0];
+          Logger.log(`  -> Range: ${sourceRange.getSheet().getName()}!${sourceRange.getA1Notation()}`);
+          Logger.log(`  -> Allowed values: ${JSON.stringify(sourceRange.getValues().flat().filter(Boolean))}`);
+        } else if (criteriaType === SpreadsheetApp.DataValidationCriteria.VALUE_IN_LIST) {
+          Logger.log(`  -> Allowed values list: ${JSON.stringify(args[0])}`);
+        }
+      } else {
+        Logger.log(`Column ${col} (${headerName}): No validation rule.`);
+      }
+    }
+  } catch (err) {
+    Logger.log("Error in logAllDataValidations: " + err.toString());
+  }
+}
+
+/**
+ * Automatically relaxes all data validation rules in the "Inventory" sheet
+ * by setting them to "Show warning" instead of "Reject input", preventing
+ * hard validation blocking errors.
+ */
+function relaxAllValidations() {
+  try {
+    const ss = getInventorySpreadsheet();
+    const sheet = ss.getSheetByName("Inventory") || ss.getSheets()[0];
+    if (!sheet) {
+      Logger.log("Error: Inventory sheet not found.");
+      return;
+    }
+    
+    const range = sheet.getDataRange();
+    const rules = range.getDataValidations();
+    let updatedCount = 0;
+    
+    for (let r = 0; r < rules.length; r++) {
+      for (let c = 0; c < rules[r].length; c++) {
+        const rule = rules[r][c];
+        if (rule) {
+          // If the rule rejects input, copy and rebuild it to allow warning
+          if (rule.getAllowInvalid() === false) {
+            const builder = rule.copy();
+            builder.setAllowInvalid(true);
+            sheet.getRange(r + 1, c + 1).setDataValidation(builder.build());
+            updatedCount++;
+          }
+        }
+      }
+    }
+    Logger.log(`Successfully relaxed ${updatedCount} data validation rules to show warnings instead of errors.`);
+  } catch (err) {
+    Logger.log("Failed to relax validations: " + err.toString());
+  }
+}
+
+/**
+ * Clears all data validation rules in the entire "Inventory" sheet
+ * to completely eliminate all "Input must fall within specified range" errors.
+ */
+function clearAllValidations() {
+  try {
+    const ss = getInventorySpreadsheet();
+    const sheet = ss.getSheetByName("Inventory") || ss.getSheets()[0];
+    if (!sheet) {
+      Logger.log("Error: Inventory sheet not found.");
+      return;
+    }
+    
+    sheet.getDataRange().clearDataValidations();
+    Logger.log("Successfully cleared all data validation rules from the entire sheet.");
+  } catch (err) {
+    Logger.log("Failed to clear validations: " + err.toString());
+  }
+}
+
