@@ -1534,11 +1534,16 @@ function recreateValidations() {
       ? lowerHeaders.indexOf("inventory location")
       : lowerHeaders.indexOf("location");
       
+    const assignedCol = lowerHeaders.indexOf("assigned");
+      
     if (typeCol === -1) {
       Logger.log("Warning: Type column not found.");
     }
     if (locationCol === -1) {
       Logger.log("Warning: Location column not found.");
+    }
+    if (assignedCol === -1) {
+      Logger.log("Warning: Assigned column not found.");
     }
     
     const lastRow = sheet.getLastRow();
@@ -1592,8 +1597,53 @@ function recreateValidations() {
       sheet.getRange(2, locationCol + 1, lastRow - 1, 1).setDataValidation(locationRule);
       Logger.log("Location validation recreated with options: " + JSON.stringify(locations));
     }
+
+    // 3. Recreate Assigned Validation
+    if (assignedCol !== -1) {
+      const performerEmails = [];
+      
+      // Load all performer emails from Profiles sheet
+      try {
+        const profilesSS = getMasterSourceSpreadsheet();
+        const profilesSheet = profilesSS.getSheetByName("Profiles") || profilesSS.getSheetByName("Profile") || profilesSS.getSheetByName("Sheet1") || profilesSS.getSheetByName("Crosswalk");
+        if (profilesSheet) {
+          const profileValues = profilesSheet.getDataRange().getValues();
+          if (profileValues.length > 1) {
+            const profileHeaders = profileValues[0].map(h => h.toString().toLowerCase().trim());
+            const emailCol = profileHeaders.findIndex(h => h.includes("email") || h.includes("correo"));
+            if (emailCol !== -1) {
+              for (let i = 1; i < profileValues.length; i++) {
+                const email = profileValues[i][emailCol].toString().trim().toLowerCase();
+                if (email && performerEmails.indexOf(email) === -1) {
+                  performerEmails.push(email);
+                }
+              }
+            }
+          }
+        }
+      } catch (e) {
+        Logger.log("Failed to load performer list for validation: " + e.toString());
+      }
+      
+      // Sort emails alphabetically
+      performerEmails.sort();
+      
+      // Add standard options like "AVAILABLE" and "— (Unassigned)"
+      if (performerEmails.indexOf("AVAILABLE") === -1) {
+        performerEmails.unshift("AVAILABLE");
+      }
+      performerEmails.unshift("— (Unassigned)");
+      
+      const assignedRule = SpreadsheetApp.newDataValidation()
+        .requireValueInList(performerEmails, true)
+        .setAllowInvalid(true)
+        .build();
+        
+      sheet.getRange(2, assignedCol + 1, lastRow - 1, 1).setDataValidation(assignedRule);
+      Logger.log("Assigned validation recreated with options: " + JSON.stringify(performerEmails));
+    }
     
-    Logger.log("Successfully recreated dropdown validation lists for Type and Location.");
+    Logger.log("Successfully recreated dropdown validation lists for Type, Location, and Assigned.");
   } catch (err) {
     Logger.log("Error in recreateValidations: " + err.toString());
   }
