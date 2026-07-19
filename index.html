@@ -513,6 +513,17 @@
       color: var(--text-main);
     }
 
+    .item-title a {
+      color: inherit;
+      text-decoration: none;
+      transition: color var(--transition-base);
+    }
+
+    .item-title a:hover {
+      color: var(--accent-gold);
+      text-decoration: underline;
+    }
+
     /* Dropdown Selection Wrapper */
     .status-group {
       display: flex;
@@ -1705,7 +1716,22 @@
           <!-- Location row -->
           <div class="form-row">
             <span class="form-pill-label pill-location" id="lblFormLocation">Location:</span>
-            <input type="text" id="formInputLocation" class="form-input" placeholder="e.g. Storage Box A" style="flex-grow: 1; height: 34px; border-radius: var(--radius-sm);">
+            <div class="view-select-container" style="flex-grow: 1;">
+              <select id="formInputLocation" class="view-select" style="width: 100%; height: 34px; padding: 0 0.5rem; border-radius: var(--radius-sm);">
+                <option value="_">_</option>
+                <option value="Office">Office</option>
+                <option value="Plastic Shed Backyard">Plastic Shed Backyard</option>
+                <option value="Shed Left Wall">Shed Left Wall</option>
+                <option value="Shed Right Wall">Shed Right Wall</option>
+                <option value="Shed Row 1 Floor">Shed Row 1 Floor</option>
+                <option value="Shed Row 2">Shed Row 2</option>
+                <option value="Shed Row 3">Shed Row 3</option>
+                <option value="Storage Cabinet">Storage Cabinet</option>
+                <option value="Storage Cabinet Side">Storage Cabinet Side</option>
+                <option value="With Performer">With Performer</option>
+                <option value="Wood Shed Backyard">Wood Shed Backyard</option>
+              </select>
+            </div>
           </div>
 
           <!-- Item Status dropdown -->
@@ -3702,7 +3728,7 @@
         document.getElementById('formInputCost').value = "";
         document.getElementById('formInputType').selectedIndex = 0;
         document.getElementById('formInputAssigned').value = "";
-        document.getElementById('formInputLocation').value = "";
+        document.getElementById('formInputLocation').value = "_";
         document.getElementById('formInputStatus').value = "-";
         document.getElementById('formInputNotes').value = "";
         document.getElementById('formInputPicture').value = "";
@@ -3912,7 +3938,7 @@
           </div>
           <div class="item-content">
             <div class="item-info">
-              <h3 class="item-title">${item.description}</h3>
+              <h3 class="item-title">${item.picUrl ? `<a href="${item.picUrl}" target="_blank" rel="noopener noreferrer">${item.description}</a>` : item.description}</h3>
               <div class="item-meta-badges">
                 <span class="meta-badge">ID: ${item.id || 'N/A'}</span>
                 <span class="meta-badge badge-gold">${dict.costLabel} ${formattedCost}</span>
