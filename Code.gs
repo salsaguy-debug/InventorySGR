@@ -1508,3 +1508,94 @@ function clearAllValidations() {
   }
 }
 
+/**
+ * Re-creates the Data Validation rules (dropdowns) for the Type and Location columns
+ * in the "Inventory" sheet.
+ * Filters out invalid hyphens "-", sorts options alphabetically, and ensures 
+ * "— (Unassigned)" is listed as the default.
+ */
+function recreateValidations() {
+  try {
+    const ss = getInventorySpreadsheet();
+    const sheet = ss.getSheetByName("Inventory") || ss.getSheets()[0];
+    if (!sheet) {
+      Logger.log("Error: Inventory sheet not found.");
+      return;
+    }
+    
+    const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    const lowerHeaders = headers.map(h => h.toString().toLowerCase().trim());
+    
+    // Find columns
+    let typeCol = lowerHeaders.indexOf("type");
+    if (typeCol === -1) typeCol = lowerHeaders.indexOf("types");
+    
+    const locationCol = lowerHeaders.indexOf("inventory location") !== -1
+      ? lowerHeaders.indexOf("inventory location")
+      : lowerHeaders.indexOf("location");
+      
+    if (typeCol === -1) {
+      Logger.log("Warning: Type column not found.");
+    }
+    if (locationCol === -1) {
+      Logger.log("Warning: Location column not found.");
+    }
+    
+    const lastRow = sheet.getLastRow();
+    if (lastRow <= 1) {
+      Logger.log("No data rows found.");
+      return;
+    }
+    
+    // 1. Recreate Type Validation
+    if (typeCol !== -1) {
+      const typeValues = sheet.getRange(2, typeCol + 1, lastRow - 1, 1).getValues().map(r => r[0].toString().trim());
+      let uniqueTypes = [...new Set(typeValues)].filter(t => t && t !== "-");
+      
+      if (uniqueTypes.indexOf("General") === -1) {
+        uniqueTypes.push("General");
+      }
+      uniqueTypes.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+      uniqueTypes.unshift("— (Unassigned)");
+      
+      const typeRule = SpreadsheetApp.newDataValidation()
+        .requireValueInList(uniqueTypes, true)
+        .setAllowInvalid(true)
+        .build();
+        
+      sheet.getRange(2, typeCol + 1, lastRow - 1, 1).setDataValidation(typeRule);
+      Logger.log("Type validation recreated with options: " + JSON.stringify(uniqueTypes));
+    }
+    
+    // 2. Recreate Location Validation
+    if (locationCol !== -1) {
+      const locations = [
+        "— (Unassigned)",
+        "Office",
+        "Plastic Shed Backyard",
+        "Shed Left Wall",
+        "Shed Right Wall",
+        "Shed Row 1 Floor",
+        "Shed Row 2",
+        "Shed Row 3",
+        "Storage Cabinet",
+        "Storage Cabinet Side",
+        "With Performer",
+        "Wood Shed Backyard"
+      ];
+      
+      const locationRule = SpreadsheetApp.newDataValidation()
+        .requireValueInList(locations, true)
+        .setAllowInvalid(true)
+        .build();
+        
+      sheet.getRange(2, locationCol + 1, lastRow - 1, 1).setDataValidation(locationRule);
+      Logger.log("Location validation recreated with options: " + JSON.stringify(locations));
+    }
+    
+    Logger.log("Successfully recreated dropdown validation lists for Type and Location.");
+  } catch (err) {
+    Logger.log("Error in recreateValidations: " + err.toString());
+  }
+}
+
