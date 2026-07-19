@@ -1718,7 +1718,7 @@
             <span class="form-pill-label pill-location" id="lblFormLocation">Location:</span>
             <div class="view-select-container" style="flex-grow: 1;">
               <select id="formInputLocation" class="view-select" style="width: 100%; height: 34px; padding: 0 0.5rem; border-radius: var(--radius-sm);">
-                <option value="_">_</option>
+                <option value="">— (Unassigned)</option>
                 <option value="Office">Office</option>
                 <option value="Plastic Shed Backyard">Plastic Shed Backyard</option>
                 <option value="Shed Left Wall">Shed Left Wall</option>
@@ -3728,7 +3728,7 @@
         document.getElementById('formInputCost').value = "";
         document.getElementById('formInputType').selectedIndex = 0;
         document.getElementById('formInputAssigned').value = "";
-        document.getElementById('formInputLocation').value = "_";
+        document.getElementById('formInputLocation').value = "";
         document.getElementById('formInputStatus').value = "-";
         document.getElementById('formInputNotes').value = "";
         document.getElementById('formInputPicture').value = "";
@@ -3745,7 +3745,9 @@
         if (uniqueTypes.indexOf("General") === -1) {
           uniqueTypes.push("General");
         }
-        typeSelect.innerHTML = uniqueTypes.map(t => `<option value="${t}">${t}</option>`).join('');
+        let html = `<option value="">— (Unassigned)</option>`;
+        html += uniqueTypes.map(t => `<option value="${t}">${t}</option>`).join('');
+        typeSelect.innerHTML = html;
       }
       
       if (performerSelect) {
