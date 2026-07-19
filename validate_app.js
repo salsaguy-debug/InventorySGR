@@ -60,6 +60,44 @@ function validateApp() {
   }
   console.log("✅ All required dropdown options are correctly defined in index.html.");
   
+  // 3b. Verify "Inventory Location" and "Type" headers checking in Code.gs
+  console.log("Checking header validation logic in Code.gs...");
+  const hasTypeHeaderCheck = codeGs.includes('indexOf("type")') || codeGs.includes("indexOf('type')");
+  const hasLocationHeaderCheck = codeGs.includes('indexOf("inventory location")') || codeGs.includes("indexOf('inventory location')");
+  
+  if (hasTypeHeaderCheck) {
+    console.log("  ✅ Found 'Type' header lookup in Code.gs.");
+  } else {
+    console.error("  ❌ Missing 'Type' header lookup in Code.gs.");
+    process.exit(1);
+  }
+  
+  if (hasLocationHeaderCheck) {
+    console.log("  ✅ Found 'Inventory Location' header lookup in Code.gs.");
+  } else {
+    console.error("  ❌ Missing 'Inventory Location' header lookup in Code.gs.");
+    process.exit(1);
+  }
+
+  // 3c. Verify "— (Unassigned)" options in index.html for Type and Location
+  console.log("Checking default '— (Unassigned)' option for Type and Location in index.html...");
+  const hasUnassignedType = indexHtml.includes('— (Unassigned)') && indexHtml.includes('formInputType');
+  const hasUnassignedLocation = indexHtml.includes('value=""') && indexHtml.includes('— (Unassigned)') && indexHtml.includes('formInputLocation');
+  
+  if (hasUnassignedType) {
+    console.log("  ✅ Found default '— (Unassigned)' option logic for formInputType.");
+  } else {
+    console.error("  ❌ Missing default '— (Unassigned)' option logic for formInputType.");
+    process.exit(1);
+  }
+  
+  if (hasUnassignedLocation) {
+    console.log("  ✅ Found default '— (Unassigned)' option in HTML for formInputLocation.");
+  } else {
+    console.error("  ❌ Missing default '— (Unassigned)' option in HTML for formInputLocation.");
+    process.exit(1);
+  }
+
   // 4. Verify spreadsheet connection
   const sheetIdMatch = codeGs.includes("1IPZznR7kK-oCoThEHmACgMOW6KJfP8NSwzGKv3q-ITY");
   if (sheetIdMatch) {
